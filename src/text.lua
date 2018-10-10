@@ -5,7 +5,7 @@ require 'tcod'
 local C = tcod.color
 
 helpText = [[
---- Dwarftown ---
+--- абвгде ---
 
 Dwarftown was once a rich, prosperous dwarven fortress. Unfortunately, a long
 time ago it has fallen, conquered by goblins and other vile creatures.
@@ -28,8 +28,7 @@ The game saves a character dump to character.txt file.
 
 ]]
 
-
-title = 'Dwarftown v1.0'
+title = 'Dwarftown v1.1'
 
 function getTitleScreen()
    return {

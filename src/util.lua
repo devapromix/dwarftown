@@ -1,9 +1,9 @@
 module('util', package.seeall)
 
 dirs = {
-   {-1,-1}, {0,-1}, {1,-1},
-
-   {1, 0}, {1, 1}, {0, 1},
+   {-1,-1}, {0,-1},
+   {1,-1}, {1, 0}, 
+   {1, 1}, {0, 1},
    {-1, 1}, {-1, 0},
 
    -- indexes
@@ -12,7 +12,7 @@ dirs = {
    sw = 7, w = 8,
 
    add = function(dir, a)
-            return 1 + (dir+a-1)%8
+            return 1 + (dir + a - 1) % 8
          end
 }
 
@@ -21,12 +21,12 @@ function randomDir()
 end
 
 function dirTowards(x1, y1, x2, y2)
-   local dx, dy = x2-x1, y2-y1
+   local dx, dy = x2 - x1, y2 - y1
    if dx == 0 or dy == 0 then
       return sign(dx), sign(dy)
    else
-      local slope1 = math.abs(dx/dy)
-      local slope2 = 1/slope1
+      local slope1 = math.abs(dx / dy)
+      local slope2 = 1 / slope1
       if slope1 < 0.5 then
          return 0, sign(dy)
       elseif slope2 < 0.5 then
@@ -56,7 +56,7 @@ function signedDescr(n)
 end
 
 function descr_a(s)
-   local c = s:sub(1,1)
+   local c = s:sub(1, 1)
    if c:match('%u') then
       return s
    elseif c:match('[aeiou]') then
@@ -84,7 +84,7 @@ function delete(t, e)
 end
 
 function capitalize(s)
-   return s:sub(1,1):upper() .. s:sub(2)
+   return s:sub(1, 1):upper() .. s:sub(2)
 end
 
 function split(s, pat)
@@ -93,8 +93,8 @@ function split(s, pat)
    while true do
       a, b = s:find(pat, i)
       if a then
-         table.insert(result, s:sub(i, a-1))
-         i = b+1
+         table.insert(result, s:sub(i, a - 1))
+         i = b + 1
       else
          table.insert(result, s:sub(i))
          break

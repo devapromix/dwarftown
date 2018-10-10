@@ -50,12 +50,12 @@ function Mob:remove()
 end
 
 function Mob:canWalk(dx, dy)
-   local tile = map.get(self.x+dx, self.y+dy)
+   local tile = map.get(self.x + dx, self.y + dy)
    return tile.walkable and not tile.mob
 end
 
 function Mob:canAttack(dx, dy)
-   local tile = map.get(self.x+dx, self.y+dy)
+   local tile = map.get(self.x + dx, self.y + dy)
    return tile.mob
 end
 
@@ -70,7 +70,7 @@ end
 function Mob:walk(dx, dy)
    local x, y = self.x, self.y
    self:remove()
-   self:putAt(x+dx, y+dy)
+   self:putAt(x + dx, y + dy)
 end
 
 function Mob:tick()
@@ -81,16 +81,16 @@ function Mob:tick()
    -- Get energy
    local en = 1
    if self.speed > 0 then
-      en = en + 0.15*self.speed
+      en = en + 0.15 * self.speed
    elseif self.speed < 0 then
-      en = en + 0.05*self.speed
+      en = en + 0.05 * self.speed
    end
    self.energy = self.energy + en
 
    -- Regenerate HP
    local n = self.maxHp/self.regen -- how many HPs per turn
    local n1 = math.floor(n)
-   local p = math.floor((n-n1)*100)
+   local p = math.floor((n - n1) * 100)
    self.hp = self.hp + n1
    if dice.getInt(0, 100) <= p then
       self.hp = self.hp + 1
@@ -106,7 +106,7 @@ function Mob:die()
 end
 
 function Mob:attack(dx, dy)
-   local mob = map.get(self.x+dx, self.y+dy).mob
+   local mob = map.get(self.x + dx, self.y + dy).mob
    if mob.dead then
       return
    end
@@ -137,19 +137,20 @@ Player = Mob:subclass {
    --maxExp = 10,
    --hp = 10,
    --maxHp = 10,
-   regen = 60,
+   --regen = 60,
 
    energy = 1,
 
    --attackDice = {1,3,1},
 
-   maxItems = 10,
+   --maxItems = 0,
 
    nArtifacts = 0,
 
    killedBy = nil,
    -- for UI: monster that we last hit
    enemy = nil,
+   kills = 0,
 }
 
 function Player:init()
@@ -161,28 +162,32 @@ function Player:init()
 end
 
 function Player._get:attackDice()
-   local plus = math.floor(self.level/2)
+   local plus = math.floor(self.level / 2)
    if self.boosts.strength then
-      plus = plus + 3 + self.level*2
+      plus = plus + 3 + self.level * 2
    end
    if self.slots.weapon then
       local a, b, c = unpack(self.slots.weapon.attackDice)
-      return {a, b, c+plus}
+      return {a, b, c + plus}
    else
-      return {1, 2, 1+plus}
+      return {1, 2, 1 + plus}
    end
 end
 
 function Player:calcStats()
    self.maxExp = self.level * 50
-   self.maxHp = 25 + (self.level-1) * 10
+   self.maxHp = 25 + (self.level - 1) * 10
+   self.maxItems = 6 + self.level;
+   if self.maxItems > 20 then
+      self.maxItems = 20
+   end
 end
 
 function Player:addExp(level)
    if level == 0 then
       return
    end
-   local a = level*6
+   local a = level * 6
    if level < self.level - 2 then
       -- little exp for low-level monsters
       a = 1
@@ -219,11 +224,11 @@ function Player:canDig(dx, dy)
    if not self.digging then
       return false
    end
-   return map.canDig(self.x+dx, self.y+dy)
+   return map.canDig(self.x + dx, self.y + dy)
 end
 
 function Player:canOpen(dx, dy)
-   local tile = map.get(self.x+dx, self.y+dy)
+   local tile = map.get(self.x + dx, self.y + dy)
    return tile.type == '+' and
       not tile.open and
       not tile.mob and
@@ -231,7 +236,7 @@ function Player:canOpen(dx, dy)
 end
 
 function Player:canClose(dx, dy)
-   local tile = map.get(self.x+dx, self.y+dy)
+   local tile = map.get(self.x + dx, self.y + dy)
    return tile.type == '+' and
       tile.open and
       not tile.mob and
@@ -250,14 +255,14 @@ end
 
 function Player:changeDoor(dx, dy, open)
    local x, y = self.x, self.y
-   local tile = map.get(x+dx, y+dy)
+   local tile = map.get(x + dx, y + dy)
    self:remove()
-   map.changeDoor(x+dx, y+dy, open)
+   map.changeDoor(x + dx, y + dy, open)
    self:putAt(x, y)
 end
 
 function Player:dig(dx, dy)
-   map.dig(self.x+dx, self.y+dy)
+   map.dig(self.x + dx, self.y + dy)
    self:recalcFov()
    ui.message('You dig.')
    self:onDig(dx, dy)
@@ -268,7 +273,7 @@ function Player:act()
 end
 
 function Player:attack(dx, dy)
-   local m = map.get(self.x+dx, self.y+dy).mob
+   local m = map.get(self.x + dx, self.y + dy).mob
    if not m.hostile then
       if not ui.promptYN('Attack %s? [yn]', m.descr_the) then
          self:refundEnergy()
@@ -279,7 +284,7 @@ function Player:attack(dx, dy)
 end
 
 function Player:walk(dx, dy)
-   if map.get(self.x+dx, self.y+dy).exit then
+   if map.get(self.x + dx, self.y + dy).exit then
       local s
       if self:canWin() then
          s = 'You will win the game'
@@ -362,7 +367,7 @@ function Player:receiveDamage(damage, crit, from)
 end
 
 function Player:pickUp(it)
-   if #self.items > self.maxItems then
+   if #self.items >= self.maxItems then
       ui.message('Your backpack is full!')
       self:refundEnergy()
    else
@@ -434,9 +439,9 @@ function Player:onAttack(mob, damage, crit)
    self.enemy = mob
    if damage > 0 then
       if crit then
-         ui.message(C.yellow, 'You critically hit %s!', mob.descr_the)
+         ui.message(C.yellow, 'You critically hit %s (%d)!', mob.descr_the, damage)
       else
-         ui.message('You hit %s.', mob.descr_the)
+         ui.message('You hit %s (%d).', mob.descr_the, damage)
       end
    else
       ui.message('You fail to hurt %s.', mob.descr_the)
@@ -470,7 +475,7 @@ function Player:advance()
    self:calcStats()
    self.hp = self.maxHp
    ui.message(C.yellow,
-              'Congratulations! You advance to level %d.', self.level)
+      'Congratulations! You advance to level %d.', self.level)
 end
 
 Monster = Mob:subclass {
@@ -482,7 +487,8 @@ Monster = Mob:subclass {
 
    lastPlayerPos = nil,
 
-   wanders = true
+   wanders = true,
+   notice = false,
 }
 
 function Monster:receiveDamage(damage, crit, from)
@@ -514,9 +520,9 @@ function Monster:onAttack(mob, damage, crit)
    if mob.isPlayer then
       if damage > 0 then
          if crit then
-            ui.message(C.yellow, '%s critically hits you.', self.descr_the)
+            ui.message(C.yellow, '%s critically hits you (%d)!', self.descr_the, damage)
          else
-            ui.message('%s hits you.', self.descr_the)
+            ui.message('%s hits you (%d).', self.descr_the, damage)
          end
       else
          ui.message('%s hits you, but your armor protects you.',
@@ -583,6 +589,16 @@ function Monster:walkRandomDir(test)
    end
 end
 
+function Monster:walk(dx, dy)
+   Mob.walk(self, dx, dy)
+   -- Noise
+   local d = map.dist(self.x, self.y, map.player.x, map.player.y)
+   local r = 5
+   if not self.tile.inFov and d <= r then
+         ui.message('You hear an earth-breaking noise.')
+   end   
+end
+
 function Monster:act()
    if self.wanders and self.fearsLight then
       if self:escapeLight() then
@@ -591,7 +607,10 @@ function Monster:act()
    end
    if self.hostile and self:canSeePlayer() then
       self.lastPlayerPos = {map.player.x, map.player.y}
-
+      if not self.notice then
+	     ui.message('%s notices you!', self.descr_the)
+		 self.notice = true
+	  end
       if self:summon() then
          return
       end
@@ -610,6 +629,7 @@ function Monster:act()
       end
    elseif not self.wanders then
       -- non-wandering monsters stop when they don't see player
+	  self.notice = false
       self:wait()
       return
    end
@@ -661,6 +681,47 @@ function Monster._get:descr_the()
    else
       return 'something'
    end
+end
+
+Slug = Monster:subclass {
+   glyph = {'s', C.lighterBlue},
+   name = 'slug',
+
+   maxHp = 3,
+   attackDice = {1, 2, 0},
+   
+   speed = -2,
+   level = 1,
+}
+
+GiantSlug = Monster:subclass {
+   glyph = {'S', C.lightBlue},
+   name = 'giant slug',
+
+   maxHp = 5,
+   attackDice = {1, 3, 1},
+
+   speed = -2,
+   freq = 0.5,
+   level = 2,
+}
+
+function GiantSlug:receiveDamage(damage, crit, from)
+   if from.isPlayer and dice.getInt(1, 8) == 1 then
+      for x = self.x-2, self.x+2 do
+         for y = self.y-2, self.y+2 do
+            local tile = map.get(x, y)
+            if not tile.empty and tile.walkable and not tile.mob then
+               if dice.getInt(1, 3) == 1 then
+                  local m = Slug:make()
+                  m:putAt(x, y)
+				  return
+               end
+            end
+         end
+      end
+   end
+   Monster.receiveDamage(self, damage, crit, from)
 end
 
 GlowingFungus = Monster:subclass {
@@ -730,6 +791,10 @@ Spectre = Monster:subclass {
    level = 6,
 }
 
+function Spectre._get:visible()
+   return self.tile.visible and self.tile.light == 0
+end
+
 Wight = Monster:subclass {
    glyph = {'Z', C.darkGrey},
    name = 'wight',
@@ -754,10 +819,6 @@ Skeleton = Monster:subclass {
    dropRate = 0.3,
 }
 
-function Spectre._get:visible()
-   return self.tile.visible and self.tile.light == 0
-end
-
 Rat = Monster:subclass {
    glyph = {'r', C.darkOrange},
    name = 'rat',
@@ -770,13 +831,13 @@ Rat = Monster:subclass {
    level = 1,
 }
 
-GiantRat = Monster:subclass {
-   glyph = {'r', C.darkerOrange},
+GiantRat = Rat:subclass {
    name = 'giant rat',
 
    attackDice = {1,4,0},
 
    maxHp = 6,
+   speed = 3,
 
    level = 2,
    dropRate = 0.2,
@@ -788,34 +849,43 @@ Bat = Monster:subclass {
 
    attackDice = {1,4,0},
 
-   maxHp = 6,
+   maxHp = 8,
 
    speed = 3,
-   fearsLight = true,
    level = 1,
+
+   fearsLight = true,
 }
 
-KillerBat = Monster:subclass {
-   glyph = {'b', C.orange},
+KillerBat = Bat:subclass {
    name = 'killer bat',
 
-   attackDice = {3,6,0},
+   attackDice = {2,6,0},
 
    maxHp = 10,
    armor = 2,
 
-   freq = 0.1,
-   speed = 3,
-   fearsLight = true,
+   freq = 0.2,
    level = 1,
 }
 
+GiantBat = Bat:subclass {
+   name = 'giant bat',
+
+   attackDice = {2,7,1},
+
+   maxHp = 12,
+   armor = 3,
+
+   freq = 0.1,
+   level = 2,
+}
 
 Bear = Monster:subclass {
    glyph = {'B', C.darkOrange},
    name = 'bear',
 
-   attackDice = {1,10,2},
+   attackDice = {1,8,2},
    armor = 5,
 
    speed = -1,
@@ -836,6 +906,17 @@ Squirrel = Monster:subclass {
    hostile = false,
 }
 
+Warg = Monster:subclass {
+   glyph = {'w', C.darkGrey},
+   name = 'warg',
+
+   attackDice = {2,4,2},
+   armor = 1,
+   speed = 2,
+   maxHp = 12,
+   level = 2,
+}
+
 Goblin = Monster:subclass {
    glyph = {'g', C.darkGreen},
    name = 'goblin',
@@ -849,6 +930,39 @@ Goblin = Monster:subclass {
 
    dropRate = 0.3,
 }
+
+Kobold = Monster:subclass {
+   glyph = {'k', C.darkGreen},
+   name = 'kobold',
+
+   attackDice = {1,4,1},
+   
+   armor = 1,
+   speed = 1,
+   maxHp = 10,
+   level = 3,
+
+   dropRate = 0.2,
+}
+
+KoboldKing = Kobold:subclass {
+   glyph = {'K', C.lightGreen},
+   name = 'Kobold King',
+
+   attackDice = {1,6,3},
+   
+   armor = 3,
+   maxHp = 18,
+   level = 4,
+
+   wanders = false,
+   dropRate = 0.8,
+}
+
+function KoboldKing:die()
+   self.tile:addItem(item.PotionHealth:make())
+   Monster.die(self)
+end
 
 Bugbear = Monster:subclass {
    glyph = {'O', C.yellow},
@@ -888,10 +1002,10 @@ Ogre = Monster:subclass {
    attackDice = {1,8,4},
 
    speed = -1,
-   maxHp = 20,
-   armor = 3,
+   maxHp = 28,
+   armor = 4,
 
-   level = 5,
+   level = 6,
 
    freq = 0.5,
    dropRate = 0.4,
@@ -905,7 +1019,7 @@ GoblinNecro = Monster:subclass {
    armor = 5,
 
    speed = -2,
-   maxHp = 30,
+   maxHp = 35,
    level = 6,
 
    summonedMonsters = { Rat, Spectre, Wight, Skeleton },
@@ -928,9 +1042,9 @@ GoblinKing = Monster:subclass {
    name = 'Goblin King',
 
    attackDice = {2,8,2},
-   armor = 9,
+   armor = 10,
 
-   maxHp = 35,
+   maxHp = 45,
    level = 8,
 
    --summonedMonsters = { Rat, Spectre, Wight, Skeleton },

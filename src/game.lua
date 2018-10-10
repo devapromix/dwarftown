@@ -203,7 +203,7 @@ function command.pickUp()
          player:pickUp(items[1])
          return
       end
-      local item = ui.promptItems(items, 'Select an item to pick up')
+      local item = ui.promptItems(player, items, 'Select an item to pick up')
       if item then
          player:pickUp(item)
          return
@@ -217,7 +217,7 @@ function command.pickUp()
 end
 
 function command.drop()
-   local item = ui.promptItems(player.items, 'Select an item to drop')
+   local item = ui.promptItems(player, player.items, 'Select an item to drop')
    if item then
       player:drop(item)
       player:spendEnergy()
@@ -225,7 +225,7 @@ function command.drop()
 end
 
 function command.inventory()
-   local item = ui.promptItems(player.items, 'Select an item to use')
+   local item = ui.promptItems(player, player.items, 'Select an item to use')
    if item then
       player:use(item)
       player:spendEnergy()

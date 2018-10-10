@@ -2,6 +2,7 @@ module('ui', package.seeall)
 
 require 'tcod'
 require 'map'
+require 'mob'
 require 'util'
 require 'text'
 
@@ -109,12 +110,14 @@ function promptEnter(...)
    prompt({tcod.k.ENTER, tcod.k.KPENTER}, C.yellow, ...)
 end
 
-function promptItems(items, ...)
+function promptItems(player, items, ...)
    update()
    local text = string.format(...)
    itemConsole = tcod.Console(VIEW_W, #items + 2)
    itemConsole:setDefaultForeground(C.white)
    itemConsole:print(0, 0, text)
+   local v = ('%d/%d'):format(#player.items, player.maxItems)
+   itemConsole:print(VIEW_W - #v, 0, v)
 
    local letter = ord('a')
    for i, it in ipairs(items) do
@@ -137,8 +140,7 @@ function promptItems(items, ...)
       local char, color = glyph(it.glyph)
       itemConsole:putCharEx(4, i+1, char, color,
                             C.black)
-   end
-
+	end
    tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2,
              rootConsole, 1, 1)
    tcod.console.flush()
@@ -154,7 +156,7 @@ end
 function stringItems(items)
    local lines = {}
    for i, it in ipairs(items) do
-      local letter = ord('a')-1+i
+      local letter = ord('a') - 1 + i
       local s
       if it.equipped then
          s = ('%c * %s %s'):format(letter, it.glyph[1], it.descr)
@@ -213,7 +215,14 @@ function drawStatus(player)
    end
 
    if player.hp < player.maxHp then
-      drawHealthBar(3, player.hp / player.maxHp)
+      local c = C.green
+	  if player.hp < player.maxHp * .66 then
+	     c = C.yellow
+	  end
+	  if player.hp < player.maxHp * .33 then
+	     c = C.red
+      end
+      drawHealthBar(3, player.hp / player.maxHp, c)
    end
 
    if player.enemy then
@@ -221,8 +230,9 @@ function drawStatus(player)
       if m.x and m.visible and
          map.dist(player.x, player.y, m.x, m.y) <= 2
       then
+	     local f = ('%s (%d/%d)'):format(m.descr, m.hp, m.maxHp)
          local s = ('L%d %-18s %s'):format(
-            m.level, m.descr, dice.describe(m.attackDice))
+            m.level, f, dice.describe(m.attackDice))
          statusConsole:setDefaultForeground(m.glyph[2])
          statusConsole:print(0, STATUS_H-2, s)
          if m.hp < m.maxHp then
@@ -493,7 +503,7 @@ function mapScreenshot()
    end
    --]]
    local image = tcod.Image(con)
-   print(con:getWidth(), con:getHeight())
+   --print(con:getWidth(), con:getHeight())
    --image:refreshConsole(con)
    image:save('map.png')
 end

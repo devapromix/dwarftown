@@ -56,19 +56,24 @@ end
 
 function getSector(x1, y1)
    for _, sec in ipairs(sectors) do
-      if sec.x <= x1 and x1 < sec.x+sec.w and
-         sec.y <= y1 and y1 < sec.y+sec.h
+      if sec.x <= x1 and x1 < sec.x + sec.w and
+         sec.y <= y1 and y1 < sec.y + sec.h
       then
          return sec
       end
    end
 end
 
+function inMap(x, y)
+   return x >= 0 and x < WIDTH and y >= 0 and y < HEIGHT
+end
+
 function get(x, y)
-   if x < 0 or x >= HEIGHT or y < 0 or y >= WIDTH then
+   --if x < 0 or x >= HEIGHT or y < 0 or y >= WIDTH then
+   if not inMap(x, y) then
       return emptyTile
    end
-   return tiles[y*WIDTH + x] or emptyTile
+   return tiles[y * WIDTH + x] or emptyTile
 end
 
 function updateProperties(x, y, tile)
@@ -77,15 +82,17 @@ function updateProperties(x, y, tile)
 end
 
 function set(x, y, tile)
-   if x < 0 or x >= HEIGHT or y < 0 or y >= WIDTH then
+   --if x < 0 or x >= HEIGHT or y < 0 or y >= WIDTH then
+   if not inMap(x, y) then
       return
    end
-   tiles[y*WIDTH + x] = tile
+   tiles[y * WIDTH + x] = tile
    updateProperties(x, y, tile)
 end
 
 function canDig(x, y)
-   if x <= 0 or x >= WIDTH-1 or y <= 0 or y >= HEIGHT - 1 then
+   --if x <= 0 or x >= WIDTH - 1 or y <= 0 or y >= HEIGHT - 1 then
+   if not inMap(x, y) then
       return false
    end
    return get(x, y).diggable
@@ -95,8 +102,8 @@ function dig(x, y)
    alterMap(x, y,
             function()
                set(x, y, Floor:make())
-               for x1 = x-1, x+1 do
-                  for y1 = y-1, y+1 do
+               for x1 = x - 1, x + 1 do
+                  for y1 = y - 1, y + 1 do
                      if get(x1, y1).empty then
                         set(x1, y1, Stone:make())
                      end
@@ -217,8 +224,8 @@ end
 
 function rect(x, y, radius)
    local function iter()
-      for x1 = x-radius, x+radius do
-         for y1 = y-radius, y+radius do
+      for x1 = x - radius, x + radius do
+         for y1 = y - radius, y + radius do
             local tile = get(x1, y1)
             if not tile.empty then
                coroutine.yield(x1, y1, tile)
@@ -345,9 +352,8 @@ Stone = Tile:subclass {
    diggable = true,
 }
 
-
 Door = Tile:subclass {
-   glyphOpen = {'^', C.darkerOrange},
+   glyphOpen = {'-', C.darkerOrange},
    glyphClosed = {'+', C.darkerOrange},
    open = false,
    type = '+',
@@ -377,6 +383,21 @@ Floor = Tile:subclass {
    name = 'floor',
    transparent = true,
    walkable = true,
+}
+
+DirtFloor = Tile:subclass {
+   glyph = {'.', C.darkOrange},
+   type = '.',
+   name = 'dirt floor',
+   transparent = true,
+   walkable = true,
+}
+
+DirtWall = Tile:subclass {
+   glyph = {'#', C.darkerOrange},
+   type = '#',
+   name = 'dirt wall',
+   diggable = true,
 }
 
 Grave = Tile:subclass {
@@ -412,8 +433,17 @@ LightSource = Tile:subclass {
 
 Water = Tile:subclass {
    glyph = {'=', C.blue},
-   type = '=',
+   type = '.',
    name = 'water',
+
+   transparent = true,
+   walkable = true,
+}
+
+DeepWater = Tile:subclass {
+   glyph = {'=', C.darkBlue},
+   type = '=',
+   name = 'deep water',
 
    transparent = true,
    walkable = false,

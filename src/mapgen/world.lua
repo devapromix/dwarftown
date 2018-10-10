@@ -24,6 +24,7 @@ function createWorld()
       s = Square,
       M = Mines,
       m = Marketplace,
+      k = KoboldCaves,
       r = RatCaves,
       f = Forest,
    }
@@ -31,6 +32,7 @@ function createWorld()
    local chart = {
       {false, 'g', false},
       {'M', 's', 'm'},
+      {false, 'k'},
       {false, 'r'},
       {false, 'f'},
    }
@@ -143,7 +145,7 @@ end
 
 function makeLake(w, h)
    local room = mapgen.Room:make()
-   room:setCircle(1, 1, w, h, map.Water, false)
+   room:setCircle(1, 1, w, h, map.DeepWater, false)
    return room
 end
 
@@ -167,11 +169,57 @@ function RatCaves:init()
    return room
 end
 
+KoboldCaves = Sector:subclass {
+   name = 'Kobold Caves',
+   color = C.darkerOrange,
+   nItems = 5,
+   itemsLevel = 2,
+
+   nMonsters = 25,
+   monsters = {mob.GlowingFungus, mob.GiantSlug, mob.Kobold},
+}
+
+function KoboldCaves:init()
+   self.room = mapgen.Room:make {
+      w = self.w, h = self.h,
+      wall = map.DirtWall,
+	  floor = map.DirtFloor,
+   }
+   self.room = mapgen.cell.makeCellRoom(self.room, false)
+
+   -- put some water
+   local x, y
+      for x = 1, self.room.w-1 do
+         for y = 1, self.room.h-1 do
+            local tile = self.room:get(x, y)
+            if not tile.empty and tile.type == '.' then
+               if dice.getInt(1, 3) == 1 then
+                  self.room:set(x, y, map.Water:make())
+               end
+            end
+         end
+      end
+
+   -- Kobold King
+   local xc = math.floor(self.w/2)
+   for x = xc-5, xc+5 do
+      for y = 1, self.h-1 do
+	     local tile = self.room:get(x, y)
+         if not tile.empty and tile.type == '.' then
+            tile.mob = mob.KoboldKing:make()
+            return
+         end
+      end
+   end
+   
+   return room
+end
+
 Marketplace = Sector:subclass {
    name = 'Dwarftown Marketplace',
    color = C.orange,
    nMonsters = 5,
-   monsters = {mob.Rat, mob.Goblin},
+   monsters = {mob.Rat, mob.GiantRat, mob.Bat, mob.GiantBat, mob.Goblin},
 
    itemsLevel = 5,
 }
@@ -297,7 +345,7 @@ Square = Sector:subclass {
 
    --nMonsters = 30,
    -- monsters placed manually indoors
-   monsters = {mob.Ogre, mob.Goblin},
+   monsters = {mob.Ogre, mob.Goblin, mob.Warg},
 
    nItems = 7,
    itemsLevel = 4,
@@ -318,11 +366,16 @@ function Square:init()
          local x, y = mapgen.randomWallCenter(2,2,w-1,h-1)
          room:set(x, y, map.Lamp)
          if dice.getInt(1, 2) == 1 then
-            -- add some monsters
+            -- add some monsters and items
             for x = 3, w-2 do
                for y = 3, h-2 do
                   if dice.getInt(1, 2) == 1 then
                      room:get(x, y).mob = dice.choiceEx(self.monsters):make()
+				  end 
+                  if dice.getInt(1, 9) == 1 then
+                     local it = dice.choiceEx(
+                        item.Item.all, itemsLevel):make()
+                     room:get(x, y):addItem(it)
                   end
                end
             end
@@ -358,7 +411,7 @@ function Mines:init()
       wall = map.Stone,
    }
    mapgen.tree.makeTree(self.room, self.w, self.h,
-                        self.w-3, math.floor(self.h/2),
+                        self.w - 3, math.floor(self.h / 2),
                         util.dirs.w)
 
    self.room:addWalls()
