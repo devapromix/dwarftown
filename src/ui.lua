@@ -35,7 +35,7 @@ local chr = string.char
 
 function init()
    tcod.console.setCustomFont(
-      'fonts/terminal10x18.png', tcod.FONT_LAYOUT_ASCII_INROW, 16, 16)
+      'wrapper/terminal.png', tcod.FONT_LAYOUT_ASCII_INCOL, 16, 16)
    tcod.console.initRoot(
       SCREEN_W, SCREEN_H, 'Dwarftown', false, tcod.RENDERER_SDL)
    rootConsole = tcod.console.getRoot()
