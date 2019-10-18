@@ -8,6 +8,7 @@ require 'text'
 
 local C = tcod.color
 local K = tcod.k
+local T = require "BearLibTerminal"
 
 SCREEN_W = 80
 SCREEN_H = 25
@@ -36,9 +37,11 @@ local chr = string.char
 function init()
    tcod.console.setCustomFont(
       'wrapper/terminal.png', tcod.FONT_LAYOUT_ASCII_INCOL, 16, 16)
+--    'fonts/terminal10x18.png', tcod.FONT_LAYOUT_ASCII_INROW, 16, 16)
    tcod.console.initRoot(
       SCREEN_W, SCREEN_H, 'Dwarftown', false, tcod.RENDERER_SDL)
    rootConsole = tcod.console.getRoot()
+
    viewConsole = tcod.Console(VIEW_W, VIEW_H)
    messagesConsole = tcod.Console(MESSAGES_W, MESSAGES_H)
    statusConsole = tcod.Console(STATUS_W, STATUS_H)
@@ -48,10 +51,12 @@ end
 
 function update()
    rootConsole:clear()
+   T.clear()
    drawMap(map.player.x, map.player.y)
    drawMessages()
    drawStatus(map.player)
    blitConsoles()
+   T.refresh()
 end
 
 function blitConsoles()
@@ -114,10 +119,13 @@ function promptItems(player, items, ...)
    update()
    local text = string.format(...)
    itemConsole = tcod.Console(VIEW_W, #items + 2)
+   T.clear_area(1,1,VIEW_W, #items + 2)
    itemConsole:setDefaultForeground(C.white)
    itemConsole:print(0, 0, text)
+   T.print(1, 1, text)
    local v = ('%d/%d'):format(#player.items, player.maxItems)
    itemConsole:print(VIEW_W - #v, 0, v)
+   T.print(VIEW_W - #v + 1, 1, v)
 
    local letter = ord('a')
    for i, it in ipairs(items) do
@@ -136,19 +144,34 @@ function promptItems(player, items, ...)
       end
       itemConsole:setDefaultForeground(color)
       itemConsole:print(0, i+1, s)
+      T.print(1, i+2, s)
 
       local char, color = glyph(it.glyph)
       itemConsole:putCharEx(4, i+1, char, color,
                             C.black)
+      T.put(5, i+2, char)
 	end
    tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2,
              rootConsole, 1, 1)
    tcod.console.flush()
-   local key = tcod.console.waitForKeypress(true)
-   if ord(key.c) then
-      local i = ord(key.c) - letter + 1
-      if items[i] then
-         return items[i]
+   T.refresh()
+   if elvion then
+      if T.has_input() then
+         repeat
+            local key = T.read()
+            local i = ord(key) - ord(T.TK_A) + 1
+            if items[i] then
+               return items[i]
+            end
+         until key == T.TK_ESCAPE
+      end
+   else
+      local key = tcod.console.waitForKeypress(true)
+      if ord(key.c) then
+         local i = ord(key.c) - letter + 1
+         if items[i] then
+            return items[i]
+         end
       end
    end
 end
@@ -201,6 +224,7 @@ function drawStatus(player)
    end
 
    statusConsole:clear()
+   T.clear_area(1+VIEW_W+1, 1, STATUS_W, STATUS_H)
    statusConsole:setDefaultForeground(C.lightGrey)
    for i, msg in ipairs(lines) do
       local s
@@ -212,6 +236,7 @@ function drawStatus(player)
          s = string.format(unpack(msg, 2))
       end
       statusConsole:print(0, i-1, s)
+      T.print(1+VIEW_W+1, i, s)
    end
 
    if player.hp < player.maxHp then
@@ -235,6 +260,7 @@ function drawStatus(player)
             m.level, f, dice.describe(m.attackDice))
          statusConsole:setDefaultForeground(m.glyph[2])
          statusConsole:print(0, STATUS_H-2, s)
+         T.print(1+VIEW_W+1, STATUS_H-1, s)
          if m.hp < m.maxHp then
             drawHealthBar(STATUS_H-1, m.hp/m.maxHp, m.glyph[2])
          end
@@ -248,12 +274,16 @@ function drawHealthBar(y, fract, color)
    color = color or C.white
    local health = math.ceil((STATUS_W-2) * fract)
    statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
+   T.print(1+VIEW_W+1, y+1, '[[')
    statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
+   T.print(1+VIEW_W+1+STATUS_W - 1, y+1, ']]')
    for i = 1, STATUS_W-2 do
       if i - 1 < health then
          statusConsole:putCharEx(i, y, ord('*'), color, C.black)
+         T.put(1+VIEW_W+1+i, y+1, ord('*'))
       else
          statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
+         T.put(1+VIEW_W+1+i, y+1, ord('-'))
       end
    end
 end
@@ -261,6 +291,7 @@ end
 
 function drawMessages()
    messagesConsole:clear()
+   T.clear_area(1+VIEW_W+1, 1+STATUS_H+1, MESSAGES_W, MESSAGES_H)
 
    local y = MESSAGES_H
    local i = #messages
@@ -279,6 +310,7 @@ function drawMessages()
          local y1 = y - #lines + i - 1
          if y1 >= 0 then
             messagesConsole:print(0, y1, line)
+            T.print(1+VIEW_W+1, 1+STATUS_H+1+y1, line);
          end
       end
       y = y - #lines
@@ -302,6 +334,7 @@ function drawMap(xPos, yPos)
    local xc = math.floor(VIEW_W/2)
    local yc = math.floor(VIEW_H/2)
    viewConsole:clear()
+   T.clear_area(1, 1, VIEW_W, VIEW_H)
    for xv = 0, VIEW_W-1 do
       for yv = 0, VIEW_H-1 do
          local x = xv - xc + xPos
@@ -311,6 +344,8 @@ function drawMap(xPos, yPos)
             local char, color = tileAppearance(tile)
             viewConsole:putCharEx(xv, yv, char, color,
                                   C.black)
+            --T.color(color)
+            T.put(xv+1, yv+1, char);
          end
       end
    end
@@ -455,10 +490,17 @@ end
 
 function help()
    rootConsole:clear()
+   T.clear()
    rootConsole:setDefaultForeground(C.lighterGrey)
    rootConsole:print(1, 1, text.helpText)
+   T.print(1, 1, text.helpText);
    tcod.console.flush()
-   tcod.console.waitForKeypress(true)
+   T.refresh()
+   if elvion then
+      game.waitForKeypress()
+   else
+      tcod.console.waitForKeypress(true)
+   end
 end
 
 function screenshot()
@@ -502,14 +544,15 @@ function mapScreenshot()
       end
    end
    --]]
-   local image = tcod.Image(con)
+   --local image = tcod.Image(con)
    --print(con:getWidth(), con:getHeight())
    --image:refreshConsole(con)
-   image:save('map.png')
+   --image:save('map.png')
 end
 --]]
 
 function drawScreen(sc)
+   T.clear()
    rootConsole:clear()
    local start = math.floor((SCREEN_H-#sc-1)/2)
    local center = math.floor(SCREEN_W/2)
@@ -521,6 +564,8 @@ function drawScreen(sc)
       end
       rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
                           line)
+	   T.print(center, start+i-1, line)
    end
    tcod.console.flush()
+   T.refresh()
 end

@@ -11,28 +11,29 @@ require 'text'
 
 local K = tcod.k
 local C = tcod.color
+local T = require "BearLibTerminal"
 
 local keybindings = {
    [{'y', '7', K.KP7}] = {'walk', {-1, -1}},
-   [{'k', '8', K.KP8, K.UP}] = {'walk', {0, -1}},
+   [{'k', '8', K.KP8, K.UP, T.TK_UP}] = {'walk', {0, -1}},
    [{'u', '9', K.KP9}] = {'walk', {1, -1}},
-   [{'h', '4', K.KP4, K.LEFT}] = {'walk', {-1, 0}},
+   [{'h', '4', K.KP4, K.LEFT, T.TK_LEFT}] = {'walk', {-1, 0}},
    [{'.', '5', K.KP5}] = 'wait',
-   [{'l', '6', K.KP6, K.RIGHT}] = {'walk', {1, 0}},
+   [{'l', '6', K.KP6, K.RIGHT, T.TK_RIGHT}] = {'walk', {1, 0}},
    [{'b', '1', K.KP1}] = {'walk', {-1, 1}},
-   [{'j', '2', K.KP2, K.DOWN}] = {'walk', {0, 1}},
+   [{'j', '2', K.KP2, K.DOWN, T.TK_DOWN}] = {'walk', {0, 1}},
    [{'n', '3', K.KP3}] = {'walk', {1, 1}},
 
    [{'g', ','}] = 'pickUp',
    [{'d'}] = 'drop',
-   [{'i'}] = 'inventory',
+   [{'i', T.TK_I}] = 'inventory',
    [{'c'}] = 'close',
    [{'x', ';'}] = 'look',
-   [{'q', K.ESCAPE}] = 'quit',
-   [{'?'}] = 'help',
+   [{'q', K.ESCAPE, T.TK_ESCAPE}] = 'quit',
+   [{'?', T.TK_H}] = 'help',
    [{K.F11}] = 'screenshot',
    [{K.F8}] = 'toggleColor',
-   --[{K.F12}] = 'mapScreenshot',
+   [{K.F12}] = 'mapScreenshot',
 }
 
 player = nil
@@ -50,8 +51,11 @@ function init()
    ui.drawScreen(text.getLoadingScreen())
    local x, y = mapgen.world.createWorld()
    ui.drawScreen(text.getTitleScreen())
-   tcod.console.waitForKeypress(true)
-
+   if elvion then
+      waitForKeypress()
+   else
+      tcod.console.waitForKeypress(true)
+   end
    player = mob.Player:make()
 
    local startingItems
@@ -79,14 +83,32 @@ function init()
    done = false
 end
 
+function waitForKeypress()
+   while true do
+      if T.has_input() then
+         local key = T.read()
+         break
+      end
+   end
+   return key
+end
+
 function mainLoop()
    ui.message('Find Dwarftown!')
    ui.message('Press ? for help.')
    while not done do
       ui.update()
       ui.newTurn()
-      local key = tcod.console.waitForKeypress(true)
-      executeCommand(key)
+      if elvion then
+         if T.has_input() then
+            local key = T.read()
+            executeCommand(key)
+         end
+      else
+         local key = tcod.console.waitForKeypress(true)
+         executeCommand(key)
+      end
+
       while player.energy <= 0 and not player.dead do
          map.tick()
          turn = turn + 1
@@ -101,13 +123,13 @@ function mainLoop()
          if player.dead then
             -- use real name, not 'something' or item
             local killer = player.killedBy.class.name
-            ui.promptEnter('[Game over: killed by %s. Press ENTER]', killer)
+            ui.promptEnter('Game over: killed by %s. Press ENTER', killer)
             done = true
             reason = 'Killed by ' .. killer
          end
       elseif player.leaving then
          if player.nArtifacts == item.N_ARTIFACTS then
-            ui.promptEnter('[Congratulations! You have won. Press ENTER]')
+            ui.promptEnter('Congratulations! You have won. Press ENTER')
             reason = 'Won the game'
          end
          done = true
@@ -118,6 +140,7 @@ function mainLoop()
    saveCharacterDump(reason)
 
    tcod.console.flush()
+   T.refresh()
 end
 
 -- Returns true if player spent a turn
@@ -133,9 +156,15 @@ end
 function getCommand(key)
    for keys, cmd in pairs(keybindings) do
       for _, k in ipairs(keys) do
-         if ((type(k) == 'string' and key.c == k) or
-          (type(k) == 'number' and key.vk == k)) then
-            return cmd
+         if elvion then
+            if key == k then
+               return cmd
+            end
+         else
+            if ((type(k) == 'string' and key.c == k) or
+               (type(k) == 'number' and key.vk == k)) then
+               return cmd
+            end
          end
       end
    end
@@ -268,7 +297,7 @@ function saveCharacterDump(reason)
          text.title, os.date(), reason)
    write('  SCREENSHOT\n\n')
    write(ui.stringScreenshot())
-   write('\n\n  LAST MESAGES\n\n')
+   write('\n\n  LAST MESSAGES\n\n')
    for i = 1, 15 do
       local n = #ui.messages-15+i
       if ui.messages[n] then
