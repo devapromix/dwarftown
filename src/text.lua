@@ -1,9 +1,5 @@
 module('text', package.seeall)
 
-require 'tcod'
-
-local C = tcod.color
-
 helpText = [[
 --- Dwarftown ---
 
@@ -32,9 +28,9 @@ title = 'Dwarftown v1.2'
 
 function getTitleScreen()
    return {
-      {C.white, title},
+      {'white', title},
       '',
-      {C.lightGrey, 'by hmp <humpolec@gmail.com>'},
+      {'light grey', 'by hmp <humpolec@gmail.com>'},
       '',
       '',
       '[[Press any key to continue]]',

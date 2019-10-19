@@ -36,7 +36,6 @@ local chr = string.char
 function init()
    tcod.console.setCustomFont(
       'wrapper/terminal.png', tcod.FONT_LAYOUT_ASCII_INCOL, 16, 16)
---    'fonts/terminal10x18.png', tcod.FONT_LAYOUT_ASCII_INROW, 16, 16)
    tcod.console.initRoot(
       SCREEN_W, SCREEN_H, 'Dwarftown', false, tcod.RENDERER_SDL)
    rootConsole = tcod.console.getRoot()
@@ -205,45 +204,40 @@ function drawStatus(player)
       sectorColor = sector.color
    end
    local lines = {
-      {sectorColor or C.white, sectorName or ''},
-      {''},
-      {'Turn     %d', game.turn},
-      {''}, -- line 4: health bar
-      {'HP       %d/%d', player.hp, player.maxHp},
-      {'Level    %d (%d/%d)', player.level, player.exp, player.maxExp},
-      {'Attack   %s', dice.describe(player.attackDice)},
+      {sectorColor or 'white', sectorName or ''},
+      {'', ''},
+      {'', 'Turn     %d', game.turn},
+      {'', ''}, -- line 4: health bar
+      {'', 'HP       %d/%d', player.hp, player.maxHp},
+      {'', 'Level    %d (%d/%d)', player.level, player.exp, player.maxExp},
+      {'', 'Attack   %s', dice.describe(player.attackDice)},
    }
 
    if player.armor ~= 0 then
-      table.insert(lines, {'Armor    %s', util.signedDescr(player.armor)})
+      table.insert(lines, {'', 'Armor    %s', util.signedDescr(player.armor)})
    end
    if player.speed ~= 0 then
-      table.insert(lines, {'Speed    %s', util.signedDescr(player.speed)})
+      table.insert(lines, {'', 'Speed    %s', util.signedDescr(player.speed)})
    end
 
    statusConsole:clear()
    T.clear_area(1+VIEW_W+1, 1, STATUS_W, STATUS_H)
    statusConsole:setDefaultForeground(C.lightGrey)
+   T.color('light grey')
    for i, msg in ipairs(lines) do
-      local s
-      if type(msg[1]) == 'string' then
-         statusConsole:setDefaultForeground(C.lightGrey)
-         s = string.format(unpack(msg))
-      else
-         statusConsole:setDefaultForeground(msg[1])
-         s = string.format(unpack(msg, 2))
-      end
+      T.color(msg[1])
+      local s = string.format(unpack(msg, 2))
       statusConsole:print(0, i-1, s)
       T.print(1+VIEW_W+1, i, s)
    end
 
    if player.hp < player.maxHp then
-      local c = C.green
+      local c = 'green'
 	  if player.hp < player.maxHp * .66 then
-	     c = C.yellow
+	     c = 'yellow'
 	  end
 	  if player.hp < player.maxHp * .33 then
-	     c = C.red
+	     c = 'red'
       end
       drawHealthBar(3, player.hp / player.maxHp, c)
    end
@@ -253,10 +247,11 @@ function drawStatus(player)
       if m.x and m.visible and
          map.dist(player.x, player.y, m.x, m.y) <= 2
       then
-	     local f = ('%s (%d/%d)'):format(m.descr, m.hp, m.maxHp)
+	      local f = ('%s (%d/%d)'):format(m.descr, m.hp, m.maxHp)
          local s = ('L%d %-18s %s'):format(
             m.level, f, dice.describe(m.attackDice))
          statusConsole:setDefaultForeground(m.glyph[2])
+         T.color(m.glyph[2])
          statusConsole:print(0, STATUS_H-2, s)
          T.print(1+VIEW_W+1, STATUS_H-1, s)
          if m.hp < m.maxHp then
@@ -269,18 +264,21 @@ function drawStatus(player)
 end
 
 function drawHealthBar(y, fract, color)
-   color = color or C.white
+   color = color or 'white'
    local health = math.ceil((STATUS_W-2) * fract)
-   statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
+   --statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
+   T.color('grey')
    T.print(1+VIEW_W+1, y+1, '[[')
-   statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
+   --statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
    T.print(1+VIEW_W+1+STATUS_W - 1, y+1, ']]')
    for i = 1, STATUS_W-2 do
       if i - 1 < health then
-         statusConsole:putCharEx(i, y, ord('*'), color, C.black)
+         --statusConsole:putCharEx(i, y, ord('*'), color, C.black)
+         T.color(color)
          T.put(1+VIEW_W+1+i, y+1, ord('*'))
       else
-         statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
+         --statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
+         T.color('grey')
          T.put(1+VIEW_W+1+i, y+1, ord('-'))
       end
    end
@@ -298,8 +296,10 @@ function drawMessages()
       local color = msg.color
       if not msg.new then
          color = color * 0.6
+         --color = 'darkest ' .. color
       end
-      messagesConsole:setDefaultForeground(color)
+      --messagesConsole:setDefaultForeground(color)
+      T.color(color)
       local lines = splitMessage(msg.text, MESSAGES_W)
       for i, line in ipairs(lines) do
          local y1 = y - #lines + i - 1
@@ -337,8 +337,7 @@ function drawMap(xPos, yPos)
          local tile = map.get(x, y)
          if not tile.empty then
             local char, color = tileAppearance(tile)
-            viewConsole:putCharEx(xv, yv, char, color,
-                                  C.black)
+            viewConsole:putCharEx(xv, yv, char, color, C.black)
             T.color(color)
             T.bkcolor(C.black)
             T.put(xv+1, yv+1, char);
@@ -442,9 +441,9 @@ function look()
       if type(cmd) == 'table' and cmd[1] == 'walk' then
          local dx, dy = unpack(cmd[2])
 
-         --if key ~= T.TK_ALT then
-         --   dx, dy = dx*10, dy*10
-         --end
+         if T.check(T.TK_ALT) then
+            dx, dy = dx*10, dy*10
+         end
 
          if 0 <= xv+dx and xv+dx < VIEW_W and
             0 <= yv+dy and yv+dy < VIEW_H
@@ -542,20 +541,15 @@ end
 
 function drawScreen(sc)
    T.clear()
-   rootConsole:clear()
    local start = math.floor((SCREEN_H-#sc-1)/2)
    local center = math.floor(SCREEN_W/2)
    for i, line in ipairs(sc) do
       if type(line) == 'table' then
          local color
          color, line = unpack(line)
-         rootConsole:setDefaultForeground(color)
+         T.color(color)
       end
-      rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
-                          line)
-      T.color(color)
 	   T.print(center - math.floor(#line/2), start+i-1, line)
    end
-   tcod.console.flush()
    T.refresh()
 end
