@@ -156,14 +156,15 @@ function promptItems(player, items, ...)
    tcod.console.flush()
    T.refresh()
    if elvion then
-      if T.has_input() then
-         repeat
-            local key = T.read()
-            local i = ord(key) - ord(T.TK_A) + 1
-            if items[i] then
-               return items[i]
-            end
-         until key == T.TK_ESCAPE
+      repeat
+
+      until T.has_input()
+      local key = T.read()
+      if key >= T.TK_A and key <= T.TK_Z then
+         local i = ord(key) - ord(T.TK_A) + 1
+         if items[i] then
+            return items[i]
+         end
       end
    else
       local key = tcod.console.waitForKeypress(true)

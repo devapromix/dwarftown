@@ -24,8 +24,8 @@ local keybindings = {
    [{'j', '2', K.KP2, K.DOWN, T.TK_DOWN}] = {'walk', {0, 1}},
    [{'n', '3', K.KP3}] = {'walk', {1, 1}},
 
-   [{'g', ','}] = 'pickUp',
-   [{'d'}] = 'drop',
+   [{'g', ',', T.TK_G}] = 'pickUp',
+   [{'d', T.TK_D}] = 'drop',
    [{'i', T.TK_I}] = 'inventory',
    [{'c'}] = 'close',
    [{'x', ';'}] = 'look',
@@ -87,10 +87,9 @@ function waitForKeypress()
    while true do
       if T.has_input() then
          local key = T.read()
-         break
+         return key
       end
    end
-   return key
 end
 
 function mainLoop()
