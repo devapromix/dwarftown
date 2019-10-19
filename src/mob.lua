@@ -275,7 +275,7 @@ end
 function Player:attack(dx, dy)
    local m = map.get(self.x + dx, self.y + dy).mob
    if not m.hostile then
-      if not ui.promptYN('Attack %s? [yn]', m.descr_the) then
+      if not ui.promptYN('Attack %s? [[y/n]]', m.descr_the) then
          self:refundEnergy()
          return
       end
@@ -291,7 +291,7 @@ function Player:walk(dx, dy)
       else
          s = 'You will quit the game'
       end
-      if ui.promptYN('Leave the area? %s. [yn]', s) then
+      if ui.promptYN('Leave the area? %s. [[y/n]]', s) then
          self.leaving = true
       else
          self:refundEnergy()
@@ -379,9 +379,9 @@ function Player:pickUp(it)
          self.nArtifacts = self.nArtifacts + 1
 
          if self:canWin() then
-            ui.promptEnter('[You have found the artifacts. ' ..
+            ui.promptEnter('[]You have found the artifacts. ' ..
                            'Leave the Forest with them to win the game. ' ..
-                           'Press ENTER]')
+                           'Press ENTER]]')
          end
       end
    end

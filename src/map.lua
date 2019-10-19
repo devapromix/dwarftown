@@ -5,8 +5,8 @@ require 'tcod'
 
 local C = tcod.color
 
-WIDTH = 300
-HEIGHT = 300
+WIDTH = 500
+HEIGHT = 500
 
 local tiles
 local tcodMap

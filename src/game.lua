@@ -14,26 +14,27 @@ local C = tcod.color
 local T = require "BearLibTerminal"
 
 local keybindings = {
-   [{'y', '7', K.KP7}] = {'walk', {-1, -1}},
-   [{'k', '8', K.KP8, K.UP, T.TK_UP}] = {'walk', {0, -1}},
-   [{'u', '9', K.KP9}] = {'walk', {1, -1}},
-   [{'h', '4', K.KP4, K.LEFT, T.TK_LEFT}] = {'walk', {-1, 0}},
-   [{'.', '5', K.KP5}] = 'wait',
-   [{'l', '6', K.KP6, K.RIGHT, T.TK_RIGHT}] = {'walk', {1, 0}},
-   [{'b', '1', K.KP1}] = {'walk', {-1, 1}},
-   [{'j', '2', K.KP2, K.DOWN, T.TK_DOWN}] = {'walk', {0, 1}},
-   [{'n', '3', K.KP3}] = {'walk', {1, 1}},
+   [{T.TK_KP_7}] = {'walk', {-1, -1}},
+   [{T.TK_UP, T.TK_KP_8}] = {'walk', {0, -1}},
+   [{T.TK_KP_9}] = {'walk', {1, -1}},
+   [{T.TK_LEFT, T.TK_KP_4}] = {'walk', {-1, 0}},
+   [{T.TK_W, T.TK_KP_5}] = 'wait',
+   [{T.TK_RIGHT, T.TK_KP_6}] = {'walk', {1, 0}},
+   [{T.TK_KP_1}] = {'walk', {-1, 1}},
+   [{T.TK_DOWN, T.TK_KP_2}] = {'walk', {0, 1}},
+   [{T.TK_KP_3}] = {'walk', {1, 1}},
 
-   [{'g', ',', T.TK_G}] = 'pickUp',
-   [{'d', T.TK_D}] = 'drop',
-   [{'i', T.TK_I}] = 'inventory',
-   [{'c'}] = 'close',
-   [{'x', ';'}] = 'look',
-   [{'q', K.ESCAPE, T.TK_ESCAPE}] = 'quit',
-   [{'?', T.TK_H}] = 'help',
-   [{K.F11}] = 'screenshot',
-   [{K.F8}] = 'toggleColor',
-   [{K.F12}] = 'mapScreenshot',
+   [{T.TK_G}] = 'pickUp',
+   [{T.TK_D}] = 'drop',
+   [{T.TK_I}] = 'inventory',
+   [{T.TK_C}] = 'close',
+   [{T.TK_X}] = 'look',
+   [{T.TK_ESCAPE}] = 'quit',
+   [{T.TK_H}] = 'help',
+
+--   [{T.TK_F11}] = 'screenshot',
+--   [{T.TK_F8}] = 'toggleColor',
+--   [{T.TK_F12}] = 'mapScreenshot',
 }
 
 player = nil
@@ -51,11 +52,8 @@ function init()
    ui.drawScreen(text.getLoadingScreen())
    local x, y = mapgen.world.createWorld()
    ui.drawScreen(text.getTitleScreen())
-   if elvion then
-      waitForKeypress()
-   else
-      tcod.console.waitForKeypress(true)
-   end
+   repeat until T.has_input()
+
    player = mob.Player:make()
 
    local startingItems
@@ -83,30 +81,15 @@ function init()
    done = false
 end
 
-function waitForKeypress()
-   while true do
-      if T.has_input() then
-         local key = T.read()
-         return key
-      end
-   end
-end
-
 function mainLoop()
    ui.message('Find Dwarftown!')
    ui.message('Press ? for help.')
    while not done do
       ui.update()
       ui.newTurn()
-      if elvion then
-         if T.has_input() then
-            local key = T.read()
-            executeCommand(key)
-         end
-      else
-         local key = tcod.console.waitForKeypress(true)
-         executeCommand(key)
-      end
+      repeat until T.has_input()
+      local key = T.read()
+      executeCommand(key)
 
       while player.energy <= 0 and not player.dead do
          map.tick()
@@ -114,7 +97,7 @@ function mainLoop()
       end
       if player.dead then
          if game.wizard then
-            if not ui.promptYN('Die? [yn]') then
+            if not ui.promptYN('Die? [[y/n]]') then
                player.hp = player.maxHp
                player.dead = false
             end
@@ -155,15 +138,8 @@ end
 function getCommand(key)
    for keys, cmd in pairs(keybindings) do
       for _, k in ipairs(keys) do
-         if elvion then
-            if key == k then
-               return cmd
-            end
-         else
-            if ((type(k) == 'string' and key.c == k) or
-               (type(k) == 'number' and key.vk == k)) then
-               return cmd
-            end
+         if key == k then
+            return cmd
          end
       end
    end
@@ -213,7 +189,7 @@ function command.close(dx, dy)
 end
 
 function command.quit()
-   if ui.promptYN('Quit? [yn]') then
+   if ui.promptYN('Quit? [[y/n]]') then
       done = true
    end
 end

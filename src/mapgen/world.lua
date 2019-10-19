@@ -30,11 +30,11 @@ function createWorld()
    }
 
    local chart = {
-      {false, 'g', false},
-      {'M', 's', 'm'},
-      {false, 'k'},
-      {false, 'r'},
-      {false, 'f'},
+--      {false,  'g',  false},
+--      {'M',    's',  'm'},
+--      {false,  'k',  false},
+--      {false,  'r',  false},
+      {false,  'f',  false},
    }
    local W, H = 70, 40
    for j, row in ipairs(chart) do

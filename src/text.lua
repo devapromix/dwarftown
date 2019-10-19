@@ -5,7 +5,7 @@ require 'tcod'
 local C = tcod.color
 
 helpText = [[
---- абвгде ---
+--- Dwarftown ---
 
 Dwarftown was once a rich, prosperous dwarven fortress. Unfortunately, a long
 time ago it has fallen, conquered by goblins and other vile creatures.
@@ -17,7 +17,7 @@ lost there. Good luck!
 
 Move:  numpad,             Inventory:    i
        arrow keys,         Pick up:      g, ,
-       yuhjklbn            Drop:         d
+                           Drop:         d
 Wait:  5, .                Quit:         q, Esc
 Look:  x                   Help:         ?
                            Screenshot:   F11
@@ -28,7 +28,7 @@ The game saves a character dump to character.txt file.
 
 ]]
 
-title = 'Dwarftown v1.1'
+title = 'Dwarftown v1.2'
 
 function getTitleScreen()
    return {
@@ -37,12 +37,12 @@ function getTitleScreen()
       {C.lightGrey, 'by hmp <humpolec@gmail.com>'},
       '',
       '',
-      '[Press any key to continue]',
+      '[[Press any key to continue]]',
    }
 end
 
 function getLoadingScreen()
    local sc = getTitleScreen()
-   sc[6] = '[Creating the world, please wait...]'
+   sc[6] = '[[Creating the world, please wait...]]'
    return sc
 end

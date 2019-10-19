@@ -7,7 +7,6 @@ require 'util'
 require 'text'
 
 local C = tcod.color
-local K = tcod.k
 local T = require "BearLibTerminal"
 
 SCREEN_W = 80
@@ -88,15 +87,16 @@ function message(a, ...)
    drawMessages()
 end
 
--- ui.prompt({K.ENTER, K.KPENTER}, '[Game over. Press ENTER]')
+-- ui.prompt({K.ENTER, K.KPENTER}, '[[Game over. Press ENTER]]')
 function prompt(keys, ...)
    message(...)
    update()
    newTurn()
    while true do
-      local key = tcod.console.waitForKeypress(true)
+      repeat until T.has_input()
+      local key = T.read()
       for _, k in ipairs(keys) do
-         if k == key.c or k == key.vk then
+         if k == key then
             return k
          elseif not k then
             return false
@@ -106,13 +106,12 @@ function prompt(keys, ...)
 end
 
 function promptYN(...)
-   local result = prompt({'y', false}, C.green, ...)
-   --table.remove(messages)
-   return result == 'y'
+   local result = prompt({T.TK_Y, false}, C.green, ...)
+   return result == T.TK_Y
 end
 
 function promptEnter(...)
-   prompt({tcod.k.ENTER, tcod.k.KPENTER}, C.yellow, ...)
+   prompt({T.TK_ENTER, T.TK_RETURN}, C.yellow, ...)
 end
 
 function promptItems(player, items, ...)
@@ -156,9 +155,7 @@ function promptItems(player, items, ...)
    tcod.console.flush()
    T.refresh()
    if elvion then
-      repeat
-
-      until T.has_input()
+      repeat until T.has_input()
       local key = T.read()
       if key >= T.TK_A and key <= T.TK_Z then
          local i = ord(key) - ord(T.TK_A) + 1
@@ -289,7 +286,6 @@ function drawHealthBar(y, fract, color)
    end
 end
 
-
 function drawMessages()
    messagesConsole:clear()
    T.clear_area(1+VIEW_W+1, 1+STATUS_H+1, MESSAGES_W, MESSAGES_H)
@@ -299,12 +295,10 @@ function drawMessages()
 
    while y > 0 and i > 0 do
       local msg = messages[i]
-
       local color = msg.color
       if not msg.new then
          color = color * 0.6
       end
-
       messagesConsole:setDefaultForeground(color)
       local lines = splitMessage(msg.text, MESSAGES_W)
       for i, line in ipairs(lines) do
@@ -345,7 +339,8 @@ function drawMap(xPos, yPos)
             local char, color = tileAppearance(tile)
             viewConsole:putCharEx(xv, yv, char, color,
                                   C.black)
-            --T.color(color)
+            T.color(color)
+            T.bkcolor(C.black)
             T.put(xv+1, yv+1, char);
          end
       end
@@ -432,6 +427,7 @@ function look()
       describeTile(map.get(x, y))
 
       blitConsoles()
+      T.refresh()
 
       -- Clean up
       viewConsole:putCharEx(xv, yv, char, color, C.black)
@@ -440,14 +436,15 @@ function look()
       end
 
       -- Get keyboard input
-      local key = tcod.console.waitForKeypress(true)
+      repeat until T.has_input()
+      local key = T.read()
       local cmd = game.getCommand(key)
       if type(cmd) == 'table' and cmd[1] == 'walk' then
          local dx, dy = unpack(cmd[2])
 
-         if key.lalt or key.ralt then
-            dx, dy = dx*10, dy*10
-         end
+         --if key ~= T.TK_ALT then
+         --   dx, dy = dx*10, dy*10
+         --end
 
          if 0 <= xv+dx and xv+dx < VIEW_W and
             0 <= yv+dy and yv+dy < VIEW_H
@@ -461,10 +458,8 @@ function look()
                yPos = yPos + dy
                drawMap(xPos, yPos)
             end
-
          end
-
-      elseif key.vk ~= K.SHIFT and key.vk ~= K.ALT and key.vk ~= K.CONTROL then
+      elseif key ~= T.TK_SHIFT and key ~= T.TK_ALT and key ~= T.TK_CONTROL then
          break
       end
    end
@@ -490,18 +485,11 @@ function describeTile(tile)
 end
 
 function help()
-   rootConsole:clear()
    T.clear()
-   rootConsole:setDefaultForeground(C.lighterGrey)
-   rootConsole:print(1, 1, text.helpText)
+   T.color('lighter grey')
    T.print(1, 1, text.helpText);
-   tcod.console.flush()
    T.refresh()
-   if elvion then
-      game.waitForKeypress()
-   else
-      tcod.console.waitForKeypress(true)
-   end
+   repeat until T.has_input()
 end
 
 function screenshot()
@@ -565,7 +553,8 @@ function drawScreen(sc)
       end
       rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
                           line)
-	   T.print(center, start+i-1, line)
+      T.color(color)
+	   T.print(center - math.floor(#line/2), start+i-1, line)
    end
    tcod.console.flush()
    T.refresh()
