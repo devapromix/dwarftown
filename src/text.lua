@@ -1,5 +1,7 @@
 module('text', package.seeall)
 
+title = 'Dwarftown v1.2'
+
 helpText = [[
 --- Dwarftown ---
 
@@ -24,8 +26,6 @@ The game saves a character dump to character.txt file.
 
 ]]
 
-title = 'Dwarftown v1.2'
-
 function getTitleScreen()
    return {
       title,
@@ -33,12 +33,12 @@ function getTitleScreen()
       'by hmp <humpolec@gmail.com>',
       '',
       '',
-      '[[Press any key to continue]]',
+      'Press any key to continue',
    }
 end
 
 function getLoadingScreen()
    local sc = getTitleScreen()
-   sc[6] = '[[Creating the world, please wait...]]'
+   sc[6] = 'Creating the world, please wait...'
    return sc
 end
