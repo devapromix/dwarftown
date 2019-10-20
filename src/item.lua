@@ -1,10 +1,43 @@
 module('item', package.seeall)
 
+require 'dice'
 require 'tcod'
 require 'class'
 require 'util'
 
 local C = tcod.color
+
+local colors = {
+   C.white,
+   C.green,
+   C.blue,
+   C.yellow,
+   C.orange,
+   C.pink,
+   C.red,
+   C.grey,
+   C.sky,
+   C.violet,
+}
+
+local nums = {
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   0,
+}
+
+function init()
+   dice.shuffle(nums)
+end
+
+-- ====================== --
 
 Item = class.Object:subclass {
    exclude = true,
@@ -59,6 +92,8 @@ function Item._get:descr_the()
    return util.descr_the(self.descr)
 end
 
+-- ====================== --
+
 LightSource = Item:subclass {
    exclude = true,
    slot = 'light',
@@ -105,6 +140,7 @@ Lamp = LightSource:subclass {
    level = 4,
 }
 
+-- ====================== --
 
 Weapon = Item:subclass {
    exclude = true,
@@ -315,16 +351,18 @@ BootsSpeed = Armor:subclass {
    level = 6,
 }
 
+-- ====================== --
 
 EmptyBottle = Item:subclass {
    glyph = {'!', C.grey},
    name = 'empty bottle',
-
    level = 1,
 }
 
 Potion = Item:subclass {
+   glyph = {'!', C.white},
    exclude = true,
+   cid = 1,
 }
 
 function Potion:onUse(player)
@@ -333,22 +371,81 @@ function Potion:onUse(player)
    player:destroyItem(self)
 end
 
-PotionHealth = Potion:subclass {
-   glyph = {'!', C.green},
-   name = 'potion of health',
+function Potion:init()
+   self.glyph = {'!', colors[nums[self.cid] + 1]}
+end
 
+function Potion._get:descr()
+   return ('%s (%d)'):format(
+      self.name, nums[self.cid])
+end
+
+-- ====================== --
+
+HealingPotion = Potion:subclass {
+   name = 'potion of health',
+   exclude = true,
+   curePoison = false,
    level = 1,
+   heal = 20,
 
    onDrink =
       function(self, player)
          if player.hp < player.maxHp then
             ui.message('You feel much better.')
-            player.hp = player.maxHp
+            player.hp = player.hp + self.heal
+            if self.heal > 0 then
+               if player.hp > player.maxHp then
+                  player.hp = player.maxHp
+               end
+            end
          end
-         --player.hp = player.hp + math.floor(player.maxHp/2)
-         --player.hp = math.min(player.hp, player.maxHp)
       end,
 }
+
+--function HealingPotion._get:descr()
+--   return ('%s (+%d hp)'):format(
+--      self.name, self.heal)
+--end
+
+SoothingBalm = HealingPotion:subclass {
+   name = 'soothing balm',
+   cid = 1,
+   level = 1,
+   heal = 25,
+}
+
+MendingSalve = HealingPotion:subclass {
+   name = 'mending salve',
+   cid = 2,
+   level = 1,
+   heal = 50,
+}
+
+HealingPoultice = HealingPotion:subclass {
+   name = 'healing poultice',
+   cid = 3,
+   level = 1,
+   heal = 75,
+}
+
+PotionOfRejuvenation = HealingPotion:subclass {
+   name = 'potion of rejuvenation',
+   cid = 4,
+   level = 1,
+   heal = 100,
+   curePoison = true,
+}
+
+Antidote = HealingPotion:subclass {
+   name = 'antidote',
+   cid = 5,
+   level = 1,
+   heal = 0,
+   curePoison = true,
+}
+
+-- ====================== --
 
 BoostingPotion = Potion:subclass {
    exclude = true,
@@ -359,37 +456,38 @@ BoostingPotion = Potion:subclass {
 }
 
 PotionNightVision = BoostingPotion:subclass {
-   glyph = {'!', C.yellow},
    name = 'potion of night vision',
-
    boost = 'nightVision',
    boostTurns = 150,
    level = 3,
+   cid = 6,
 }
 
 PotionSpeed = BoostingPotion:subclass {
-   glyph = {'!', C.blue},
    name = 'potion of speed',
-
    boost = 'speed',
    boostTurns = 150,
    level = 4,
+   cid = 7,
 }
 
 PotionStrength = BoostingPotion:subclass {
-   glyph = {'!', C.red},
    name = 'potion of strength',
-
    boost = 'strength',
    boostTurns = 150,
    level = 5,
+   cid = 8,
 }
+
+-- ====================== --
 
 Stone = Item:subclass {
    glyph = {'*', C.darkGrey},
    name = 'stone',
    exclude = true,
 }
+
+-- ====================== --
 
 ArtifactWeapon = Weapon:subclass {
    glyph = {'(', C.lighterBlue},

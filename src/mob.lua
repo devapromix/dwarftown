@@ -476,6 +476,10 @@ function Player:advance()
       'Congratulations! You advance to level %d.', self.level)
 end
 
+function Player:heal()
+
+end
+
 Monster = Mob:subclass {
    hostile = true,
    level = 1,
@@ -681,6 +685,8 @@ function Monster._get:descr_the()
    end
 end
 
+--------------------'
+
 Slug = Monster:subclass {
    glyph = {'s', C.lighterBlue},
    name = 'slug',
@@ -720,6 +726,22 @@ function GiantSlug:receiveDamage(damage, crit, from)
       end
    end
    Monster.receiveDamage(self, damage, crit, from)
+end
+
+LuminescentFungus = Monster:subclass {
+   glyph = {'F', C.lighterGreen},
+   name = 'luminescent fungus',
+
+   maxHp = 3,
+   attackDice = {0, 0, 0},
+
+   freq = 0.4,
+   level = 0,
+
+   lightRadius = 5,
+}
+
+function LuminescentFungus:act()
 end
 
 GlowingFungus = Monster:subclass {
@@ -904,6 +926,18 @@ Squirrel = Monster:subclass {
    hostile = false,
 }
 
+Snake = Monster:subclass {
+   glyph = {'s', C.darkGrey},
+   name = 'snake',
+
+   attackDice = {1,3,0},
+
+   speed = 1,
+   maxHp = 3,
+   level = 0,
+   hostile = false,
+}
+
 Warg = Monster:subclass {
    glyph = {'w', C.darkGrey},
    name = 'warg',
@@ -958,7 +992,7 @@ KoboldKing = Kobold:subclass {
 }
 
 function KoboldKing:die()
-   self.tile:addItem(item.PotionHealth:make())
+   self.tile:addItem(item.SoothingBalm:make())
    Monster.die(self)
 end
 

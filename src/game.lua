@@ -43,6 +43,7 @@ function init()
    local reason
 
    ui.init()
+   item.init()
    map.init()
 
    ui.drawScreen(text.getLoadingScreen())
@@ -54,7 +55,14 @@ function init()
 
    local initialItems = {
       item.Torch,
-      item.PotionHealth,
+      item.PotionNightVision,
+      item.PotionSpeed,
+      item.PotionStrength,
+      item.SoothingBalm,
+      item.MendingSalve,
+      item.HealingPoultice,
+      item.PotionOfRejuvenation,
+      item.Antidote,
    }
    for _, icls in ipairs(initialItems) do
       table.insert(player.items, icls:make())

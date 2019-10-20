@@ -32,9 +32,9 @@ function createWorld()
    local chart = {
 --      {false, 'g', false},
 --      {'M', 's', 'm'},
---      {false, 'k'},
-      {false, 'r'},
-      {false, 'f'},
+      {false, 'k', false},
+      {false, 'r', false},
+      {false, 'f', false},
    }
    local W, H = 70, 40
    for j, row in ipairs(chart) do
@@ -95,7 +95,7 @@ Forest = Sector:subclass {
    roadH = 25,
 
    nMonsters = 20,
-   monsters = {mob.Bear, mob.Squirrel},
+   monsters = {mob.Bear, mob.Squirrel, mob.Snake},
 }
 
 function Forest:init()
@@ -153,10 +153,10 @@ RatCaves = Sector:subclass {
    name = 'Rat Caves',
    color = C.darkOrange,
    nItems = 20,
-   itemsLevel = 2,
+   itemsLevel = 1,
 
    nMonsters = 25,
-   monsters = {mob.Rat, mob.GiantRat, mob.Bat, mob.GlowingFungus},
+   monsters = {mob.Rat, mob.GiantRat, mob.Bat, mob.LuminescentFungus, mob.GlowingFungus},
 }
 
 function RatCaves:init()
@@ -176,7 +176,7 @@ KoboldCaves = Sector:subclass {
    itemsLevel = 2,
 
    nMonsters = 25,
-   monsters = {mob.GlowingFungus, mob.GiantSlug, mob.Kobold},
+   monsters = {mob.LuminescentFungus, mob.GlowingFungus, mob.GiantSlug, mob.Kobold},
 }
 
 function KoboldCaves:init()

@@ -3,6 +3,7 @@ module('ui', package.seeall)
 require 'tcod'
 require 'map'
 require 'mob'
+require 'item'
 require 'util'
 require 'text'
 
