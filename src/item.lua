@@ -93,13 +93,13 @@ Torch = LightSource:subclass {
    lightRadius = 7,
    turns = 100,
 
-   level = 2,
+   level = 1,
 }
 
 Lamp = LightSource:subclass {
    glyph = {']', C.yellow},
    name = 'lamp',
-   lightRadius = 9,
+   lightRadius = 10,
    turns = 300,
 
    level = 4,
@@ -382,7 +382,7 @@ PotionStrength = BoostingPotion:subclass {
 
    boost = 'strength',
    boostTurns = 150,
-   level = 4,
+   level = 5,
 }
 
 Stone = Item:subclass {

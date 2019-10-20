@@ -75,6 +75,16 @@ function setColor(color)
   T.color(T.color_from_argb(255, color.r, color.g, color.b))
 end
 
+function setBkColor(color)
+  T.bkcolor(T.color_from_argb(255, color.r, color.g, color.b))
+end
+
+function putChar(x, y, char, color, bkcolor)
+   setBkColor(bkcolor)
+   setColor(color)
+   T.put(x, y, char);
+end
+
 -- ui.message(color, format, ...)
 -- ui.message(format, ...)
 function message(a, ...)
@@ -152,31 +162,19 @@ function promptItems(player, items, ...)
       T.print(1, i+2, s)
 
       local char, color = glyph(it.glyph)
-      itemConsole:putCharEx(4, i+1, char, color,
-                            C.black)
-      setColor(color)
-      T.put(5, i+2, char)
+      itemConsole:putCharEx(4, i+1, char, color, C.black)
+      putChar(5, i+2, char, color, C.black)
 	end
    tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2,
              rootConsole, 1, 1)
    tcod.console.flush()
    T.refresh()
-   if elvion then
-      repeat until T.has_input()
-      local key = T.read()
-      if key >= T.TK_A and key <= T.TK_Z then
-         local i = ord(key) - ord(T.TK_A) + 1
-         if items[i] then
-            return items[i]
-         end
-      end
-   else
-      local key = tcod.console.waitForKeypress(true)
-      if ord(key.c) then
-         local i = ord(key.c) - letter + 1
-         if items[i] then
-            return items[i]
-         end
+   repeat until T.has_input()
+   local key = T.read()
+   if key >= T.TK_A and key <= T.TK_Z then
+      local i = ord(key) - ord(T.TK_A) + 1
+      if items[i] then
+         return items[i]
       end
    end
 end
@@ -302,6 +300,7 @@ end
 
 function drawMessages()
    messagesConsole:clear()
+   setBkColor(C.black)
    T.clear_area(1+VIEW_W+1, 1+STATUS_H+1, MESSAGES_W, MESSAGES_H)
 
    local y = MESSAGES_H
@@ -352,10 +351,8 @@ function drawMap(xPos, yPos)
          local tile = map.get(x, y)
          if not tile.empty then
             local char, color = tileAppearance(tile)
-            viewConsole:putCharEx(xv, yv, char, color,
-                                  C.black)
-            setColor(color)
-            T.put(xv+1, yv+1, char);
+            viewConsole:putCharEx(xv, yv, char, color, C.black)
+            putChar(xv+1, yv+1, char, color, C.black)
          end
       end
    end
@@ -435,6 +432,7 @@ function look()
       end
 
       viewConsole:putCharEx(xv, yv, char, C.black, color)
+      putChar(xv+1, yv+1, char, C.black, color)
 
       -- Describe position
       local x, y = xv - xc + xPos, yv - yc + yPos
@@ -445,6 +443,8 @@ function look()
 
       -- Clean up
       viewConsole:putCharEx(xv, yv, char, color, C.black)
+      putChar(xv+1, yv+1, char, color, C.black)
+
       while #messages > messagesLevel do
          table.remove(messages, #messages)
       end
@@ -481,6 +481,7 @@ function look()
 
    messages = savedMessages
    blitConsoles()
+   T.refresh()
 end
 
 function describeTile(tile)
