@@ -36,6 +36,7 @@ local chr = string.char
 function init()
    tcod.console.setCustomFont(
       'wrapper/terminal.png', tcod.FONT_LAYOUT_ASCII_INCOL, 16, 16)
+--    'fonts/terminal10x18.png', tcod.FONT_LAYOUT_ASCII_INROW, 16, 16)
    tcod.console.initRoot(
       SCREEN_W, SCREEN_H, 'Dwarftown', false, tcod.RENDERER_SDL)
    rootConsole = tcod.console.getRoot()
@@ -68,6 +69,10 @@ function blitConsoles()
       messagesConsole, 0, 0, MESSAGES_W, MESSAGES_H,
       rootConsole, 1+VIEW_W+1, 1+STATUS_H+1)
    tcod.console.flush()
+end
+
+function setColor(color)
+  T.color(T.color_from_argb(255, color.r, color.g, color.b))
 end
 
 -- ui.message(color, format, ...)
@@ -119,6 +124,7 @@ function promptItems(player, items, ...)
    itemConsole = tcod.Console(VIEW_W, #items + 2)
    T.clear_area(1,1,VIEW_W, #items + 2)
    itemConsole:setDefaultForeground(C.white)
+   setColor(C.white)
    itemConsole:print(0, 0, text)
    T.print(1, 1, text)
    local v = ('%d/%d'):format(#player.items, player.maxItems)
@@ -141,12 +147,14 @@ function promptItems(player, items, ...)
          s = ('%c     %s'):format(letter+i-1, it.descr)
       end
       itemConsole:setDefaultForeground(color)
+      setColor(color)
       itemConsole:print(0, i+1, s)
       T.print(1, i+2, s)
 
       local char, color = glyph(it.glyph)
       itemConsole:putCharEx(4, i+1, char, color,
                             C.black)
+      setColor(color)
       T.put(5, i+2, char)
 	end
    tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2,
@@ -204,40 +212,48 @@ function drawStatus(player)
       sectorColor = sector.color
    end
    local lines = {
-      {sectorColor or 'white', sectorName or ''},
-      {'', ''},
-      {'', 'Turn     %d', game.turn},
-      {'', ''}, -- line 4: health bar
-      {'', 'HP       %d/%d', player.hp, player.maxHp},
-      {'', 'Level    %d (%d/%d)', player.level, player.exp, player.maxExp},
-      {'', 'Attack   %s', dice.describe(player.attackDice)},
+      {sectorColor or C.white, sectorName or ''},
+      {''},
+      {'Turn     %d', game.turn},
+      {''}, -- line 4: health bar
+      {'HP       %d/%d', player.hp, player.maxHp},
+      {'Level    %d (%d/%d)', player.level, player.exp, player.maxExp},
+      {'Attack   %s', dice.describe(player.attackDice)},
    }
 
    if player.armor ~= 0 then
-      table.insert(lines, {'', 'Armor    %s', util.signedDescr(player.armor)})
+      table.insert(lines, {'Armor    %s', util.signedDescr(player.armor)})
    end
    if player.speed ~= 0 then
-      table.insert(lines, {'', 'Speed    %s', util.signedDescr(player.speed)})
+      table.insert(lines, {'Speed    %s', util.signedDescr(player.speed)})
    end
 
    statusConsole:clear()
    T.clear_area(1+VIEW_W+1, 1, STATUS_W, STATUS_H)
    statusConsole:setDefaultForeground(C.lightGrey)
-   T.color('light grey')
+   setColor(C.lightGrey)
    for i, msg in ipairs(lines) do
-      T.color(msg[1])
-      local s = string.format(unpack(msg, 2))
+      local s
+      if type(msg[1]) == 'string' then
+         statusConsole:setDefaultForeground(C.lightGrey)
+         setColor(C.lightGrey)
+         s = string.format(unpack(msg))
+      else
+         statusConsole:setDefaultForeground(msg[1])
+         setColor(msg[1])
+         s = string.format(unpack(msg, 2))
+      end
       statusConsole:print(0, i-1, s)
       T.print(1+VIEW_W+1, i, s)
    end
 
    if player.hp < player.maxHp then
-      local c = 'green'
+      local c = C.green
 	  if player.hp < player.maxHp * .66 then
-	     c = 'yellow'
+	     c = C.yellow
 	  end
 	  if player.hp < player.maxHp * .33 then
-	     c = 'red'
+	     c = C.red
       end
       drawHealthBar(3, player.hp / player.maxHp, c)
    end
@@ -251,7 +267,7 @@ function drawStatus(player)
          local s = ('L%d %-18s %s'):format(
             m.level, f, dice.describe(m.attackDice))
          statusConsole:setDefaultForeground(m.glyph[2])
-         T.color(m.glyph[2])
+         setColor(m.glyph[2])
          statusConsole:print(0, STATUS_H-2, s)
          T.print(1+VIEW_W+1, STATUS_H-1, s)
          if m.hp < m.maxHp then
@@ -264,21 +280,21 @@ function drawStatus(player)
 end
 
 function drawHealthBar(y, fract, color)
-   color = color or 'white'
+   color = color or C.white
    local health = math.ceil((STATUS_W-2) * fract)
-   --statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
-   T.color('grey')
+   statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
+   setColor(C.grey)
    T.print(1+VIEW_W+1, y+1, '[[')
-   --statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
+   statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
    T.print(1+VIEW_W+1+STATUS_W - 1, y+1, ']]')
    for i = 1, STATUS_W-2 do
       if i - 1 < health then
-         --statusConsole:putCharEx(i, y, ord('*'), color, C.black)
-         T.color(color)
+         statusConsole:putCharEx(i, y, ord('*'), color, C.black)
+         setColor(color)
          T.put(1+VIEW_W+1+i, y+1, ord('*'))
       else
-         --statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
-         T.color('grey')
+         statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
+         setColor(C.grey)
          T.put(1+VIEW_W+1+i, y+1, ord('-'))
       end
    end
@@ -296,10 +312,9 @@ function drawMessages()
       local color = msg.color
       if not msg.new then
          color = color * 0.6
-         --color = 'darkest ' .. color
       end
-      --messagesConsole:setDefaultForeground(color)
-      T.color(color)
+      messagesConsole:setDefaultForeground(color)
+      setColor(color)
       local lines = splitMessage(msg.text, MESSAGES_W)
       for i, line in ipairs(lines) do
          local y1 = y - #lines + i - 1
@@ -337,9 +352,9 @@ function drawMap(xPos, yPos)
          local tile = map.get(x, y)
          if not tile.empty then
             local char, color = tileAppearance(tile)
-            viewConsole:putCharEx(xv, yv, char, color, C.black)
-            T.color(color)
-            T.bkcolor(C.black)
+            viewConsole:putCharEx(xv, yv, char, color,
+                                  C.black)
+            setColor(color)
             T.put(xv+1, yv+1, char);
          end
       end
@@ -443,6 +458,7 @@ function look()
 
          if T.check(T.TK_ALT) then
             dx, dy = dx*10, dy*10
+            dx, dy = dx*10, dy*10
          end
 
          if 0 <= xv+dx and xv+dx < VIEW_W and
@@ -485,8 +501,12 @@ end
 
 function help()
    T.clear()
-   T.color('lighter grey')
-   T.print(1, 1, text.helpText);
+   rootConsole:clear()
+   setColor(C.lighterGrey)
+   rootConsole:setDefaultForeground(C.lighterGrey)
+   T.print(1, 1, text.helpText)
+   rootConsole:print(1, 1, text.helpText)
+   tcod.console.flush()
    T.refresh()
    repeat until T.has_input()
 end
@@ -541,15 +561,20 @@ end
 
 function drawScreen(sc)
    T.clear()
+   rootConsole:clear()
    local start = math.floor((SCREEN_H-#sc-1)/2)
    local center = math.floor(SCREEN_W/2)
    for i, line in ipairs(sc) do
       if type(line) == 'table' then
          local color
          color, line = unpack(line)
-         T.color(color)
+         rootConsole:setDefaultForeground(color)
+         setColor(color)
       end
+      rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
+                          line)
 	   T.print(center - math.floor(#line/2), start+i-1, line)
    end
+   tcod.console.flush()
    T.refresh()
 end

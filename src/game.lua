@@ -1,7 +1,5 @@
 module('game', package.seeall)
 
-require 'tcod'
-
 require 'ui'
 require 'map'
 require 'mob'
@@ -9,8 +7,6 @@ require 'item'
 require 'mapgen.world'
 require 'text'
 
-local K = tcod.k
-local C = tcod.color
 local T = require "BearLibTerminal"
 
 local keybindings = {
@@ -246,7 +242,6 @@ end
 
 function command.screenshot()
    ui.screenshot()
-   ui.message(C.green, 'Screenshot saved.')
 end
 
 function command.toggleColor()
@@ -257,7 +252,6 @@ end
 function command.mapScreenshot()
    ui.message('Saving map screenshot...')
    ui.mapScreenshot()
-   ui.message(C.green, 'Map screenshot saved.')
 end
 
 function saveCharacterDump(reason)

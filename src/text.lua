@@ -28,9 +28,9 @@ title = 'Dwarftown v1.2'
 
 function getTitleScreen()
    return {
-      {'white', title},
+      title,
       '',
-      {'light grey', 'by hmp <humpolec@gmail.com>'},
+      'by hmp <humpolec@gmail.com>',
       '',
       '',
       '[[Press any key to continue]]',
