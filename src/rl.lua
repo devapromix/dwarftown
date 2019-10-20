@@ -1,13 +1,9 @@
 package.path = package.path .. ';src/?.lua;src/?/init.lua;wrapper/?.lua'
 
 require 'game'
-require 'mapgen'
-require 'mapgen.tree'
 
 local args = {...}
 local T = require "BearLibTerminal"
-
-elvion = true
 
 function main()
    T.open()
@@ -27,8 +23,3 @@ end
 
 xpcall(main, handler)
 os.exit(0)
-
-T.refresh() 
-repeat 
-  key = T.read() 
-until key == T.TK_CLOSE or key == T.TK_ESCAPE 

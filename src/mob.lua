@@ -132,12 +132,9 @@ Player = Mob:subclass {
    fovRadiusLight = 20,
    fovRadiusDark = 3,
 
+   regen = 500,
    level = 1,
    exp = 0,
-   --maxExp = 10,
-   --hp = 10,
-   --maxHp = 10,
-   --regen = 60,
 
    energy = 1,
 
@@ -175,8 +172,8 @@ function Player._get:attackDice()
 end
 
 function Player:calcStats()
-   self.maxExp = self.level * 50
-   self.maxHp = 25 + (self.level - 1) * 10
+   self.maxExp = self.level * 75
+   self.maxHp = 20 + (self.level - 1) * 7
    self.maxItems = 6 + self.level;
    if self.maxItems > 20 then
       self.maxItems = 20
@@ -187,12 +184,13 @@ function Player:addExp(level)
    if level == 0 then
       return
    end
-   local a = level * 6
+   local e = dice.getInt(level * 3, level * 4)
    if level < self.level - 2 then
       -- little exp for low-level monsters
-      a = 1
+      e = 1
    end
-   self.exp = self.exp + a
+   self.exp = self.exp + e
+   ui.message('You gain %d exp.', e)
    while self.exp >= self.maxExp do
       self:advance()
    end
@@ -596,7 +594,7 @@ function Monster:walk(dx, dy)
    local r = 5
    if not self.tile.inFov and d <= r then
          ui.message('You hear an earth-breaking noise.')
-   end   
+   end
 end
 
 function Monster:act()
@@ -689,7 +687,7 @@ Slug = Monster:subclass {
 
    maxHp = 3,
    attackDice = {1, 2, 0},
-   
+
    speed = -2,
    level = 1,
 }
@@ -936,7 +934,7 @@ Kobold = Monster:subclass {
    name = 'kobold',
 
    attackDice = {1,4,1},
-   
+
    armor = 1,
    speed = 1,
    maxHp = 10,
@@ -950,7 +948,7 @@ KoboldKing = Kobold:subclass {
    name = 'Kobold King',
 
    attackDice = {1,6,3},
-   
+
    armor = 3,
    maxHp = 18,
    level = 4,

@@ -52,21 +52,11 @@ function init()
 
    player = mob.Player:make()
 
-   local startingItems
-   if not wizard then
-      startingItems = {
-         item.Torch,
-         item.PotionHealth,
-      }
-   else
-      startingItems = {
-         item.PotionNightVision,
-         item.PickAxe,
-         item.Lamp,
-         item.ArtifactWeapon,
-      }
-   end
-   for _, icls in ipairs(startingItems) do
+   local initialItems = {
+      item.Torch,
+      item.PotionHealth,
+   }
+   for _, icls in ipairs(initialItems) do
       table.insert(player.items, icls:make())
    end
 

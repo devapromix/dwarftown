@@ -55,7 +55,7 @@ function createWorld()
 
    world:placeOnMap(0, 0)
    map.sectors = world.sectors
-   return sectors['f']:getStartingPoint()
+   return sectors['r']:getStartingPoint()
 end
 
 Sector = class.Object:subclass {

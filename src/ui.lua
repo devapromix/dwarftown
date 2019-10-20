@@ -165,14 +165,13 @@ function promptItems(player, items, ...)
       itemConsole:putCharEx(4, i+1, char, color, C.black)
       putChar(5, i+2, char, color, C.black)
 	end
-   tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2,
-             rootConsole, 1, 1)
+   tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2, rootConsole, 1, 1)
    tcod.console.flush()
    T.refresh()
    repeat until T.has_input()
    local key = T.read()
    if key >= T.TK_A and key <= T.TK_Z then
-      local i = ord(key) - ord(T.TK_A) + 1
+      local i = key - T.TK_A + 1
       if items[i] then
          return items[i]
       end
@@ -281,19 +280,16 @@ function drawHealthBar(y, fract, color)
    color = color or C.white
    local health = math.ceil((STATUS_W-2) * fract)
    statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
-   setColor(C.grey)
-   T.print(1+VIEW_W+1, y+1, '[[')
+   putChar(1+VIEW_W+1, y+1, '[[', C.grey, C.black)
    statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
-   T.print(1+VIEW_W+1+STATUS_W - 1, y+1, ']]')
+   putChar(1+VIEW_W+1+STATUS_W - 1, y+1, ']]', C.grey, C.black)
    for i = 1, STATUS_W-2 do
       if i - 1 < health then
          statusConsole:putCharEx(i, y, ord('*'), color, C.black)
-         setColor(color)
-         T.put(1+VIEW_W+1+i, y+1, ord('*'))
+         putChar(1+VIEW_W+1+i, y+1, ord('*'), color, C.black)
       else
          statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
-         setColor(C.grey)
-         T.put(1+VIEW_W+1+i, y+1, ord('-'))
+         putChar(1+VIEW_W+1+i, y+1, ord('-'), C.grey, C.black)
       end
    end
 end
@@ -574,7 +570,7 @@ function drawScreen(sc)
       end
       rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
                           line)
-	   T.print(center - math.floor(#line/2), start+i-1, line)
+      T.print(center, start+i-1, 0, 0, T.TK_ALIGN_CENTER, line)
    end
    tcod.console.flush()
    T.refresh()
