@@ -37,7 +37,7 @@ local chr = string.char
 
 -- debug
 function T.debug(str)
-   debug_str = str
+
 end
 
 function init()
@@ -359,7 +359,6 @@ function drawMap(xPos, yPos)
          end
       end
    end
-   T.print(1, 0, debug_str)
 end
 
 function glyph(g)
