@@ -20,4 +20,4 @@ function handler(message)
 end
 
 xpcall(main, handler)
-os.exit(0)
+--os.exit(0)

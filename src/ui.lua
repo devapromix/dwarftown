@@ -35,9 +35,18 @@ messages = {}
 local ord = string.byte
 local chr = string.char
 
--- debug
-function T.debug(str)
+function setColor(color)
+  T.color(T.color_from_argb(255, color.r, color.g, color.b))
+end
 
+function setBkColor(color)
+  T.bkcolor(T.color_from_argb(255, color.r, color.g, color.b))
+end
+
+function putChar(x, y, char, color, bkcolor)
+   setBkColor(bkcolor)
+   setColor(color)
+   T.put(x, y, char);
 end
 
 function init()
@@ -76,20 +85,6 @@ function blitConsoles()
       messagesConsole, 0, 0, MESSAGES_W, MESSAGES_H,
       rootConsole, 1+VIEW_W+1, 1+STATUS_H+1)
    tcod.console.flush()
-end
-
-function setColor(color)
-  T.color(T.color_from_argb(255, color.r, color.g, color.b))
-end
-
-function setBkColor(color)
-  T.bkcolor(T.color_from_argb(255, color.r, color.g, color.b))
-end
-
-function putChar(x, y, char, color, bkcolor)
-   setBkColor(bkcolor)
-   setColor(color)
-   T.put(x, y, char);
 end
 
 -- ui.message(color, format, ...)
