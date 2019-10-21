@@ -7,30 +7,28 @@ require 'item'
 require 'mapgen.world'
 require 'text'
 
-local T = require "BearLibTerminal"
-
 local keybindings = {
-   [{T.TK_KP_7}] = {'walk', {-1, -1}},
-   [{T.TK_UP, T.TK_KP_8}] = {'walk', {0, -1}},
-   [{T.TK_KP_9}] = {'walk', {1, -1}},
-   [{T.TK_LEFT, T.TK_KP_4}] = {'walk', {-1, 0}},
-   [{T.TK_W, T.TK_KP_5}] = 'wait',
-   [{T.TK_RIGHT, T.TK_KP_6}] = {'walk', {1, 0}},
-   [{T.TK_KP_1}] = {'walk', {-1, 1}},
-   [{T.TK_DOWN, T.TK_KP_2}] = {'walk', {0, 1}},
-   [{T.TK_KP_3}] = {'walk', {1, 1}},
+   [{ui.T.TK_KP_7}] = {'walk', {-1, -1}},
+   [{ui.T.TK_UP, ui.T.TK_KP_8}] = {'walk', {0, -1}},
+   [{ui.T.TK_KP_9}] = {'walk', {1, -1}},
+   [{ui.T.TK_LEFT, ui.T.TK_KP_4}] = {'walk', {-1, 0}},
+   [{ui.T.TK_W, ui.T.TK_KP_5}] = 'wait',
+   [{ui.T.TK_RIGHT, ui.T.TK_KP_6}] = {'walk', {1, 0}},
+   [{ui.T.TK_KP_1}] = {'walk', {-1, 1}},
+   [{ui.T.TK_DOWN, ui.T.TK_KP_2}] = {'walk', {0, 1}},
+   [{ui.T.TK_KP_3}] = {'walk', {1, 1}},
 
-   [{T.TK_G}] = 'pickUp',
-   [{T.TK_D}] = 'drop',
-   [{T.TK_I}] = 'inventory',
-   [{T.TK_C}] = 'close',
-   [{T.TK_X}] = 'look',
-   [{T.TK_ESCAPE}] = 'quit',
-   [{T.TK_H}] = 'help',
+   [{ui.T.TK_G}] = 'pickUp',
+   [{ui.T.TK_D}] = 'drop',
+   [{ui.T.TK_I}] = 'inventory',
+   [{ui.T.TK_C}] = 'close',
+   [{ui.T.TK_X}] = 'look',
+   [{ui.T.TK_ESCAPE}] = 'quit',
+   [{ui.T.TK_H}] = 'help',
 
---   [{T.TK_F11}] = 'screenshot',
---   [{T.TK_F8}] = 'toggleColor',
---   [{T.TK_F12}] = 'mapScreenshot',
+--   [{ui.T.TK_F11}] = 'screenshot',
+--   [{ui.T.TK_F8}] = 'toggleColor',
+--   [{ui.T.TK_F12}] = 'mapScreenshot',
 }
 
 player = nil
@@ -38,6 +36,11 @@ turn = 0
 wizard = false
 local command = {}
 local done = false
+
+function open()
+   ui.T.open()
+   ui.T.refresh()
+end
 
 function init()
    local reason
@@ -49,7 +52,7 @@ function init()
    ui.drawScreen(text.getLoadingScreen())
    local x, y = mapgen.world.createWorld()
    ui.drawScreen(text.getTitleScreen())
-   repeat until T.has_input()
+   repeat until ui.T.has_input()
 
    player = mob.Player:make()
 
@@ -81,8 +84,8 @@ function mainLoop()
    while not done do
       ui.update()
       ui.newTurn()
-      repeat until T.has_input()
-      local key = T.read()
+      repeat until ui.T.has_input()
+      local key = ui.T.read()
       executeCommand(key)
 
       while player.energy <= 0 and not player.dead do
@@ -116,7 +119,11 @@ function mainLoop()
    saveCharacterDump(reason)
 
    tcod.console.flush()
-   T.refresh()
+   ui.T.refresh()
+end
+
+function close()
+   ui.T.close()
 end
 
 -- Returns true if player spent a turn

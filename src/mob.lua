@@ -5,6 +5,7 @@ require 'tcod'
 require 'map'
 require 'dice'
 require 'util'
+require 'ui'
 
 local C = tcod.color
 

@@ -8,7 +8,8 @@ require 'util'
 require 'text'
 
 local C = tcod.color
-local T = require "BearLibTerminal"
+
+T = require "BearLibTerminal"
 
 SCREEN_W = 80
 SCREEN_H = 25
@@ -33,6 +34,11 @@ messages = {}
 
 local ord = string.byte
 local chr = string.char
+
+-- debug
+function T.debug(str)
+   debug_str = str
+end
 
 function init()
    tcod.console.setCustomFont(
@@ -353,6 +359,7 @@ function drawMap(xPos, yPos)
          end
       end
    end
+   T.print(1, 0, debug_str)
 end
 
 function glyph(g)

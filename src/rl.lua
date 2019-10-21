@@ -3,14 +3,12 @@ package.path = package.path .. ';src/?.lua;src/?/init.lua;wrapper/?.lua'
 require 'game'
 
 local args = {...}
-local T = require "BearLibTerminal"
 
 function main()
-   T.open()
-   T.refresh()
+   game.open()
    game.init()
    game.mainLoop()
-   T.close()
+   game.close()
 end
 
 function handler(message)
