@@ -7,7 +7,7 @@ require 'util'
 
 local C = tcod.color
 
-local colors = {
+local potions_colors = {
    C.white,
    C.green,
    C.blue,
@@ -20,28 +20,40 @@ local colors = {
    C.violet,
 }
 
-local nums = {
-   1,
-   2,
-   3,
-   4,
-   5,
-   6,
-   7,
-   8,
-   9,
-   0,
+local scrolls_colors = {
+   C.white,
+   C.green,
+   C.blue,
+   C.yellow,
+   C.orange,
+   C.pink,
+   C.red,
+   C.grey,
+   C.darkGrey,
+   C.sky,
+   C.violet,
 }
 
+local scrolls_labels = {
+   'gkdqcozh',
+}
+
+local potions_cids = {}
+local scrolls_cids = {}
+
 function init()
-   dice.shuffle(nums)
+   --potions
+   dice.shuffle(potions_colors)
+   --scrolls
+   dice.shuffle(scrolls_colors)
+   dice.shuffle(scrolls_labels)
 end
 
 -- ====================== --
 
 Item = class.Object:subclass {
    exclude = true,
-   glyph = {'?'},
+   glyph = {'*'},
    name = '<item>',
    level = 1,
 }
@@ -54,10 +66,10 @@ function Item._get:descr()
       s = s .. (' (%s)'):format(dice.describe(self.attackDice))
    end
    if self.armor then
-      s = s .. (' [%s]'):format(util.signedDescr(self.armor))
+      s = s .. (' (%s)'):format(util.signedDescr(self.armor))
    end
    if self.speed and self.speed ~= 0 then
-      s = s .. (' [Sp%s]'):format(util.signedDescr(self.speed))
+      s = s .. (' (Sp%s)'):format(util.signedDescr(self.speed))
    end
    return s
 end
@@ -354,7 +366,7 @@ BootsSpeed = Armor:subclass {
 -- ====================== --
 
 EmptyBottle = Item:subclass {
-   glyph = {'!', C.grey},
+   glyph = {'!', C.darkGrey},
    name = 'empty bottle',
    level = 1,
 }
@@ -362,28 +374,31 @@ EmptyBottle = Item:subclass {
 Potion = Item:subclass {
    glyph = {'!', C.white},
    exclude = true,
+   name = '<potion>',
    cid = 1,
 }
 
 function Potion:onUse(player)
+   potions_cids[self.cid] = 1
    ui.message('You drink %s.', self.descr_the)
    self:onDrink(player)
    player:destroyItem(self)
 end
 
 function Potion:init()
-   self.glyph = {'!', colors[nums[self.cid] + 1]}
+   self.glyph = {'!', potions_colors[self.cid]}
 end
 
 function Potion._get:descr()
-   return ('%s (%d)'):format(
-      self.name, nums[self.cid])
+   if potions_cids[self.cid] then
+      return self.name
+   end
+   return 'unknown potion'
 end
 
 -- ====================== --
 
 HealingPotion = Potion:subclass {
-   name = 'potion of health',
    exclude = true,
    curePoison = false,
    level = 1,
@@ -402,11 +417,6 @@ HealingPotion = Potion:subclass {
          end
       end,
 }
-
---function HealingPotion._get:descr()
---   return ('%s (+%d hp)'):format(
---      self.name, self.heal)
---end
 
 SoothingBalm = HealingPotion:subclass {
    name = 'soothing balm',
@@ -477,6 +487,62 @@ PotionStrength = BoostingPotion:subclass {
    boostTurns = 150,
    level = 5,
    cid = 8,
+}
+
+-- ====================== --
+
+Scroll = Item:subclass {
+   glyph = {'?', C.white},
+   exclude = true,
+   name = '<scroll>',
+   cid = 1,
+}
+
+function Scroll:onUse(player)
+   scrolls_cids[self.cid] = 1
+   ui.message('You read %s.', self.descr_the)
+   self:onRead(player)
+   player:destroyItem(self)
+end
+
+function Scroll:init()
+   self.glyph = {'?', scrolls_colors[self.cid]}
+end
+
+function Scroll._get:descr()
+   if scrolls_cids[self.cid] then
+      return self.name
+   end
+   return ('scroll labeled "%s"'):format(scrolls_labels[self.cid])
+end
+
+-- ====================== --
+
+HealingScroll = Scroll:subclass {
+   exclude = true,
+   curePoison = false,
+   level = 1,
+   heal = 30,
+
+   onRead =
+      function(self, player)
+         if player.hp < player.maxHp then
+            ui.message('You feel much better.')
+            player.hp = player.hp + self.heal
+            if self.heal > 0 then
+               if player.hp > player.maxHp then
+                  player.hp = player.maxHp
+               end
+            end
+         end
+      end,
+}
+
+ScrollOfLife = HealingScroll:subclass {
+   name = 'scroll of life',
+   cid = 1,
+   level = 1,
+   heal = 50,
 }
 
 -- ====================== --

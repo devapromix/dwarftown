@@ -58,6 +58,7 @@ function init()
 
    local initialItems = {
       item.Torch,
+      item.ScrollOfLife,
       item.PotionNightVision,
       item.PotionSpeed,
       item.PotionStrength,

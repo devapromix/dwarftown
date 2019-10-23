@@ -151,6 +151,10 @@ Player = Mob:subclass {
    kills = 0,
 }
 
+function Player:die()
+
+end
+
 function Player:init()
    self.items = {}
    self.slots = {}
