@@ -36,6 +36,11 @@ local scrolls_colors = {
 
 local scrolls_labels = {
    'gkdqcozh',
+   'kqvpzhec',
+   'ckrmodsh',
+   'lqfioxfs',
+   'meopsnie',
+   'kfsimceb',
 }
 
 local potions_cids = {}
@@ -513,7 +518,7 @@ function Scroll._get:descr()
    if scrolls_cids[self.cid] then
       return self.name
    end
-   return ('scroll labeled "%s"'):format(scrolls_labels[self.cid])
+   return ('scroll labelled "%s"'):format(scrolls_labels[self.cid])
 end
 
 -- ====================== --
@@ -527,7 +532,8 @@ HealingScroll = Scroll:subclass {
    onRead =
       function(self, player)
          if player.hp < player.maxHp then
-            ui.message('You feel much better.')
+            ui.message('You feel healed.')
+            --ui.message('You feel much better.')
             player.hp = player.hp + self.heal
             if self.heal > 0 then
                if player.hp > player.maxHp then

@@ -13,7 +13,7 @@ end
 
 function handler(message)
    s = message .. '\n' .. debug.traceback()
-   f = io.open('log.txt', 'w')
+   f = io.open('dwarftown.log.txt', 'w')
    f:write(s)
    print(s)
    return true

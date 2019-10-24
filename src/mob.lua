@@ -403,6 +403,10 @@ function Player:drop(it)
    end
 end
 
+function Player:heal()
+   self.hp = self.maxHp
+end
+
 function Player:use(item)
    if item.equipped then
       self:unequip(item)
@@ -479,10 +483,6 @@ function Player:advance()
    self.hp = self.maxHp
    ui.message(C.yellow,
       'Congratulations! You advance to level %d.', self.level)
-end
-
-function Player:heal()
-
 end
 
 Monster = Mob:subclass {
