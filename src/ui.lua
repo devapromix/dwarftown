@@ -25,11 +25,6 @@ MESSAGES_H = 10
 
 coloredMem = false
 
-local viewConsole
-local messagesConsole
-local rootConsole
-local statusConsole
-
 messages = {}
 
 local ord = string.byte
@@ -50,41 +45,15 @@ function putChar(x, y, char, color, bkcolor)
 end
 
 function init()
-   tcod.console.setCustomFont(
-      'wrapper/terminal.png', tcod.FONT_LAYOUT_ASCII_INCOL, 16, 16)
---    'fonts/terminal10x18.png', tcod.FONT_LAYOUT_ASCII_INROW, 16, 16)
-   tcod.console.initRoot(
-      SCREEN_W, SCREEN_H, 'Dwarftown', false, tcod.RENDERER_SDL)
-   rootConsole = tcod.console.getRoot()
-
-   viewConsole = tcod.Console(VIEW_W, VIEW_H)
-   messagesConsole = tcod.Console(MESSAGES_W, MESSAGES_H)
-   statusConsole = tcod.Console(STATUS_W, STATUS_H)
-
    messages = {}
 end
 
 function update()
-   rootConsole:clear()
    T.clear()
    drawMap(map.player.x, map.player.y)
    drawMessages()
    drawStatus(map.player)
-   blitConsoles()
    T.refresh()
-end
-
-function blitConsoles()
-   tcod.console.blit(
-      viewConsole, 0, 0, VIEW_W, VIEW_H,
-      rootConsole, 1, 1)
-   tcod.console.blit(
-      statusConsole, 0, 0, STATUS_W, STATUS_H,
-      rootConsole, 1+VIEW_W+1, 1)
-   tcod.console.blit(
-      messagesConsole, 0, 0, MESSAGES_W, MESSAGES_H,
-      rootConsole, 1+VIEW_W+1, 1+STATUS_H+1)
-   tcod.console.flush()
 end
 
 -- ui.message(color, format, ...)
@@ -133,14 +102,10 @@ end
 function promptItems(player, items, ...)
    update()
    local text = string.format(...)
-   itemConsole = tcod.Console(VIEW_W, #items + 2)
    T.clear_area(1,1,VIEW_W, #items + 2)
-   itemConsole:setDefaultForeground(C.white)
    setColor(C.white)
-   itemConsole:print(0, 0, text)
    T.print(1, 1, text)
    local v = ('%d/%d'):format(#player.items, player.maxItems)
-   itemConsole:print(VIEW_W - #v, 0, v)
    T.print(VIEW_W - #v + 1, 1, v)
 
    local letter = ord('a')
@@ -158,17 +123,12 @@ function promptItems(player, items, ...)
          color = color * 0.5
          s = ('%c     %s'):format(letter+i-1, it.descr)
       end
-      itemConsole:setDefaultForeground(color)
       setColor(color)
-      itemConsole:print(0, i+1, s)
       T.print(1, i+2, s)
 
       local char, color = glyph(it.glyph)
-      itemConsole:putCharEx(4, i+1, char, color, C.black)
       putChar(5, i+2, char, color, C.black)
 	end
-   tcod.console.blit(itemConsole, 0, 0, VIEW_W, #items + 2, rootConsole, 1, 1)
-   tcod.console.flush()
    T.refresh()
    repeat until T.has_input()
    local key = T.read()
@@ -227,22 +187,17 @@ function drawStatus(player)
       table.insert(lines, {'Speed    %s', util.signedDescr(player.speed)})
    end
 
-   statusConsole:clear()
    T.clear_area(1+VIEW_W+1, 1, STATUS_W, STATUS_H)
-   statusConsole:setDefaultForeground(C.lightGrey)
    setColor(C.lightGrey)
    for i, msg in ipairs(lines) do
       local s
       if type(msg[1]) == 'string' then
-         statusConsole:setDefaultForeground(C.lightGrey)
          setColor(C.lightGrey)
          s = string.format(unpack(msg))
       else
-         statusConsole:setDefaultForeground(msg[1])
-         setColor(msg[1])
+        setColor(msg[1])
          s = string.format(unpack(msg, 2))
       end
-      statusConsole:print(0, i-1, s)
       T.print(1+VIEW_W+1, i, s)
    end
 
@@ -265,9 +220,7 @@ function drawStatus(player)
 	      local f = ('%s (%d/%d)'):format(m.descr, m.hp, m.maxHp)
          local s = ('L%d %-18s %s'):format(
             m.level, f, dice.describe(m.attackDice))
-         statusConsole:setDefaultForeground(m.glyph[2])
          setColor(m.glyph[2])
-         statusConsole:print(0, STATUS_H-2, s)
          T.print(1+VIEW_W+1, STATUS_H-1, s)
          if m.hp < m.maxHp then
             drawHealthBar(STATUS_H-1, m.hp/m.maxHp, m.glyph[2])
@@ -281,23 +234,18 @@ end
 function drawHealthBar(y, fract, color)
    color = color or C.white
    local health = math.ceil((STATUS_W-2) * fract)
-   statusConsole:putCharEx(0, y, ord('['), C.grey, C.black)
    putChar(1+VIEW_W+1, y+1, '[[', C.grey, C.black)
-   statusConsole:putCharEx(STATUS_W - 1, y, ord(']'), C.grey, C.black)
    putChar(1+VIEW_W+1+STATUS_W - 1, y+1, ']]', C.grey, C.black)
    for i = 1, STATUS_W-2 do
       if i - 1 < health then
-         statusConsole:putCharEx(i, y, ord('*'), color, C.black)
          putChar(1+VIEW_W+1+i, y+1, ord('*'), color, C.black)
       else
-         statusConsole:putCharEx(i, y, ord('-'), C.grey, C.black)
          putChar(1+VIEW_W+1+i, y+1, ord('-'), C.grey, C.black)
       end
    end
 end
 
 function drawMessages()
-   messagesConsole:clear()
    setBkColor(C.black)
    T.clear_area(1+VIEW_W+1, 1+STATUS_H+1, MESSAGES_W, MESSAGES_H)
 
@@ -310,13 +258,11 @@ function drawMessages()
       if not msg.new then
          color = color * 0.6
       end
-      messagesConsole:setDefaultForeground(color)
       setColor(color)
       local lines = splitMessage(msg.text, MESSAGES_W)
       for i, line in ipairs(lines) do
          local y1 = y - #lines + i - 1
          if y1 >= 0 then
-            messagesConsole:print(0, y1, line)
             T.print(1+VIEW_W+1, 1+STATUS_H+1+y1, line);
          end
       end
@@ -340,7 +286,6 @@ end
 function drawMap(xPos, yPos)
    local xc = math.floor(VIEW_W/2)
    local yc = math.floor(VIEW_H/2)
-   viewConsole:clear()
    T.clear_area(1, 1, VIEW_W, VIEW_H)
    for xv = 0, VIEW_W-1 do
       for yv = 0, VIEW_H-1 do
@@ -349,7 +294,6 @@ function drawMap(xPos, yPos)
          local tile = map.get(x, y)
          if not tile.empty then
             local char, color = tileAppearance(tile)
-            viewConsole:putCharEx(xv, yv, char, color, C.black)
             putChar(xv+1, yv+1, char, color, C.black)
          end
       end
@@ -423,24 +367,21 @@ function look()
    while true do
 
       -- Draw highlighted character
-      local char = viewConsole:getChar(xv, yv)
-      local color = viewConsole:getCharForeground(xv, yv)
+      --local char = viewConsole:getChar(xv, yv)
+      --local color = viewConsole:getCharForeground(xv, yv)
       if char == ord(' ') then
          color = C.white
       end
 
-      viewConsole:putCharEx(xv, yv, char, C.black, color)
       putChar(xv+1, yv+1, char, C.black, color)
 
       -- Describe position
       local x, y = xv - xc + xPos, yv - yc + yPos
       describeTile(map.get(x, y))
 
-      blitConsoles()
       T.refresh()
 
       -- Clean up
-      viewConsole:putCharEx(xv, yv, char, color, C.black)
       putChar(xv+1, yv+1, char, color, C.black)
 
       while #messages > messagesLevel do
@@ -478,7 +419,6 @@ function look()
    end
 
    messages = savedMessages
-   blitConsoles()
    T.refresh()
 end
 
@@ -500,12 +440,8 @@ end
 
 function help()
    T.clear()
-   rootConsole:clear()
    setColor(C.lighterGrey)
-   rootConsole:setDefaultForeground(C.lighterGrey)
    T.print(1, 1, text.helpText)
-   rootConsole:print(1, 1, text.helpText)
-   tcod.console.flush()
    T.refresh()
    repeat until T.has_input()
 end
@@ -520,7 +456,7 @@ function stringScreenshot()
    for y = 0, SCREEN_H-1 do
       local line = ''
       for x = 0, SCREEN_W-1 do
-         line = line .. chr(rootConsole:getChar(x, y))
+         --line = line .. chr(rootConsole:getChar(x, y))
       end
       table.insert(lines, line)
    end
@@ -537,8 +473,8 @@ end
 
 ---[[
 function mapScreenshot()
-   local con = tcod.Console(map.WIDTH, map.HEIGHT)
-   con:clear()
+   --local con = tcod.Console(map.WIDTH, map.HEIGHT)
+   --con:clear()
    ---[[
    for x = 0, map.WIDTH-1 do
       for y = 0, map.HEIGHT-1 do
@@ -560,20 +496,15 @@ end
 
 function drawScreen(sc)
    T.clear()
-   rootConsole:clear()
    local start = math.floor((SCREEN_H-#sc-1)/2)
    local center = math.floor(SCREEN_W/2)
    for i, line in ipairs(sc) do
       if type(line) == 'table' then
          local color
          color, line = unpack(line)
-         rootConsole:setDefaultForeground(color)
          setColor(color)
       end
-      rootConsole:printEx(center, start+i-1, tcod.BKGND_SET, tcod.CENTER,
-                          line)
       T.print(center, start+i-1, 0, 0, T.TK_ALIGN_CENTER, line)
    end
-   tcod.console.flush()
    T.refresh()
 end

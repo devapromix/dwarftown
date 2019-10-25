@@ -119,7 +119,6 @@ function mainLoop()
    reason = reason or 'Quit the game'
    saveCharacterDump(reason)
 
-   tcod.console.flush()
    ui.T.refresh()
 end
 
@@ -178,7 +177,7 @@ function command.close(dx, dy)
       ui.message('In what direction?')
       ui.newTurn()
       ui.update()
-      local key = tcod.console.waitForKeypress(true)
+      --local key = tcod.console.waitForKeypress(true)
       local cmd = getCommand(key)
       if type(cmd) == 'table' and cmd[1] == 'walk' then
          local dx, dy = unpack(cmd[2])
