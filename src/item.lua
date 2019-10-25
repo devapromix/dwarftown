@@ -3,6 +3,7 @@ module('item', package.seeall)
 require 'dice'
 require 'tcod'
 require 'class'
+require 'spell'
 require 'util'
 
 local C = tcod.color
@@ -41,6 +42,25 @@ local scrolls_labels = {
    'lqfioxfs',
    'meopsnie',
    'kfsimceb',
+   'qwbgoadg',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
+   '',
 }
 
 local potions_cids = {}
@@ -411,15 +431,7 @@ HealingPotion = Potion:subclass {
 
    onDrink =
       function(self, player)
-         if player.hp < player.maxHp then
-            ui.message('You feel much better.')
-            player.hp = player.hp + self.heal
-            if self.heal > 0 then
-               if player.hp > player.maxHp then
-                  player.hp = player.maxHp
-               end
-            end
-         end
+         player:heal(self.heal)
       end,
 }
 
@@ -523,33 +535,28 @@ end
 
 -- ====================== --
 
-HealingScroll = Scroll:subclass {
-   exclude = true,
-   curePoison = false,
+ScrollOfLesserHeal = Scroll:subclass {
+   name = 'scroll of lesser heal',
+   cid = 1,
    level = 1,
-   heal = 30,
 
    onRead =
       function(self, player)
-         if player.hp < player.maxHp then
-            ui.message('You feel healed.')
-            --ui.message('You feel much better.')
-            player.hp = player.hp + self.heal
-            if self.heal > 0 then
-               if player.hp > player.maxHp then
-                  player.hp = player.maxHp
-               end
-            end
-         end
+         spell.Heal:onCast(player)
       end,
 }
 
-ScrollOfLife = HealingScroll:subclass {
-   name = 'scroll of life',
-   cid = 1,
+ScrollOfIdentify = Scroll:subclass {
+   name = 'scroll of identify',
+   cid = 2,
    level = 1,
-   heal = 50,
+
+   onRead =
+      function(self, player)
+
+      end,
 }
+
 
 -- ====================== --
 

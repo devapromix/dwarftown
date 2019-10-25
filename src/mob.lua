@@ -382,7 +382,7 @@ function Player:pickUp(it)
          self.nArtifacts = self.nArtifacts + 1
 
          if self:canWin() then
-            ui.promptEnter('[]You have found the artifacts. ' ..
+            ui.promptEnter('[[You have found the artifacts. ' ..
                            'Leave the Forest with them to win the game. ' ..
                            'Press ENTER]]')
          end
@@ -403,8 +403,14 @@ function Player:drop(it)
    end
 end
 
-function Player:heal()
-   self.hp = self.maxHp
+function Player:heal(hp)
+   if self.hp < self.maxHp then
+      ui.message('You feel much better.')
+      self.hp = self.hp + hp
+      if self.hp > self.maxHp then
+         self.hp = self.maxHp
+      end
+   end
 end
 
 function Player:use(item)

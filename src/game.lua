@@ -26,8 +26,7 @@ local keybindings = {
    [{ui.T.TK_ESCAPE}] = 'quit',
    [{ui.T.TK_H}] = 'help',
 
---   [{ui.T.TK_F11}] = 'screenshot',
---   [{ui.T.TK_F8}] = 'toggleColor',
+   [{ui.T.TK_F11}] = 'screenshot',
 --   [{ui.T.TK_F12}] = 'mapScreenshot',
 }
 
@@ -58,7 +57,8 @@ function init()
 
    local initialItems = {
       item.Torch,
-      item.ScrollOfLife,
+      item.ScrollOfLesserHeal,
+      item.ScrollOfIdentify,
       item.PotionNightVision,
       item.PotionSpeed,
       item.PotionStrength,
@@ -248,11 +248,6 @@ end
 
 function command.screenshot()
    ui.screenshot()
-end
-
-function command.toggleColor()
-   ui.coloredMem = not ui.coloredMem
-   ui.update()
 end
 
 function command.mapScreenshot()
