@@ -246,7 +246,7 @@ function drawHealthBar(y, fract, color)
 end
 
 function drawMessages()
-   setBkColor(C.black)
+   T.bkcolor('black')
    T.clear_area(1+VIEW_W+1, 1+STATUS_H+1, MESSAGES_W, MESSAGES_H)
 
    local y = MESSAGES_H
@@ -367,13 +367,17 @@ function look()
    while true do
 
       -- Draw highlighted character
-      --local char = viewConsole:getChar(xv, yv)
-      --local color = viewConsole:getCharForeground(xv, yv)
-      if char == ord(' ') then
-         color = C.white
+      local char = T.pick(xv+1, yv+1)
+      local color = T.pick_color(xv+1, yv+1)
+      --local tile = map.get(xv+1, yv+1)
+      if char == 0 or char == 32 then
+         color = 'grey'
+         char = 32
       end
 
-      putChar(xv+1, yv+1, char, C.black, color)
+      T.bkcolor(color)
+      T.color('black')
+      T.put(xv+1, yv+1, char);
 
       -- Describe position
       local x, y = xv - xc + xPos, yv - yc + yPos
@@ -382,7 +386,9 @@ function look()
       T.refresh()
 
       -- Clean up
-      putChar(xv+1, yv+1, char, color, C.black)
+      T.bkcolor('black')
+      T.color(color)
+      T.put(xv+1, yv+1, char);
 
       while #messages > messagesLevel do
          table.remove(messages, #messages)
@@ -447,7 +453,7 @@ function help()
 end
 
 function screenshot()
-   tcod.system.saveScreenshot(nil)
+   --tcod.system.saveScreenshot(nil)
 end
 
 function stringScreenshot()
@@ -456,7 +462,11 @@ function stringScreenshot()
    for y = 0, SCREEN_H-1 do
       local line = ''
       for x = 0, SCREEN_W-1 do
-         --line = line .. chr(rootConsole:getChar(x, y))
+         local s = T.pick(x, y)
+         if s == 0 then
+            s = 32
+         end
+         line = line .. chr(s)
       end
       table.insert(lines, line)
    end

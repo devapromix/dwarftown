@@ -26,7 +26,7 @@ local keybindings = {
    [{ui.T.TK_ESCAPE}] = 'quit',
    [{ui.T.TK_H}] = 'help',
 
-   [{ui.T.TK_F11}] = 'screenshot',
+--   [{ui.T.TK_F11}] = 'screenshot',
 --   [{ui.T.TK_F12}] = 'mapScreenshot',
 }
 
@@ -262,18 +262,18 @@ function saveCharacterDump(reason)
    local function write(...)
       f:write(string.format(...))
    end
-   write('  %s character dump\n\n%s\n\n%s\n\n',
+   write('%s character dump\n\n%s\n\n%s\n\n',
          text.title, os.date(), reason)
-   write('  SCREENSHOT\n\n')
+   write('--- SCREENSHOT ---\n\n')
    write(ui.stringScreenshot())
-   write('\n\n  LAST MESSAGES\n\n')
+   write('\n\n--- LAST MESSAGES ---\n\n')
    for i = 1, 15 do
       local n = #ui.messages-15+i
       if ui.messages[n] then
          write('%s\n', ui.messages[n].text)
       end
    end
-   write('\n  INVENTORY\n\n')
+   write('\n--- INVENTORY ---\n\n')
    write(ui.stringItems(player.items))
    write('\n')
    f:close()

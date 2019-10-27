@@ -151,9 +151,9 @@ Player = Mob:subclass {
    kills = 0,
 }
 
-function Player:die()
+--function Player:die()
 
-end
+--end
 
 function Player:init()
    self.items = {}
@@ -641,7 +641,7 @@ function Monster:act()
          return
       end
    elseif not self.wanders then
-      -- non-wandering monsters stop when they don't see player
+      -- non-wandering monsters stop when they don't see player '
 	  self.notice = false
       self:wait()
       return
@@ -696,7 +696,7 @@ function Monster._get:descr_the()
    end
 end
 
---------------------'
+--------------------
 
 Slug = Monster:subclass {
    glyph = {'s', C.lighterBlue},
