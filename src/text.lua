@@ -13,12 +13,12 @@ lost there. Good luck!
 
 --- Keybindings ---
 
-Move:  numpad,             Inventory:    i
-       arrow keys,         Pick up:      g, ,
-                           Drop:         d
-Wait:  5, .                Quit:         q, Esc
-Look:  x                   Help:         ?
-                           Screenshot:   F11
+Move:  numpad,             Inventory:     i
+       arrow keys,         Pick up:       g
+                           Drop:          d
+Wait:  5                   Quit:          Esc
+Look:  x                   Help:          h
+                           Last messages: m
 
 --- Character dump ---
 

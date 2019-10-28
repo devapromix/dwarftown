@@ -452,6 +452,25 @@ function help()
    repeat until T.has_input()
 end
 
+function lastMessages()
+   setColor(C.lighterGrey)
+   T.bkcolor('black')
+   T.clear()
+   T.print(1, 1, '--- Last messages ---')
+
+   local j = 3
+   for i = 1, 21 do
+      local n = #ui.messages-21+i
+      if ui.messages[n] then
+         T.print(1, j, messages[n].text)
+         j = j + 1
+      end
+   end
+
+   T.refresh()
+   repeat until T.has_input()
+end
+
 function screenshot()
    --tcod.system.saveScreenshot(nil)
 end
