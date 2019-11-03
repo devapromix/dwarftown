@@ -58,7 +58,7 @@ function init()
 
    local initialItems = {
       item.Torch,
-      item.ScrollOfLesserHeal,
+--[[     item.ScrollOfLesserHeal,
       item.ScrollOfIdentify,
       item.PotionNightVision,
       item.PotionSpeed,
@@ -67,7 +67,7 @@ function init()
       item.MendingSalve,
       item.HealingPoultice,
       item.PotionOfRejuvenation,
-      item.Antidote,
+      item.Antidote,]]
    }
    for _, icls in ipairs(initialItems) do
       table.insert(player.items, icls:make())
