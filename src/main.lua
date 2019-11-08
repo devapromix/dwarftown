@@ -7,6 +7,7 @@ require 'mapgen.tree'
 local args = {...}
 
 function main()
+   game.open()
    if args[1] == 'mapgen' then
       mapgen.tree.test()
    else
@@ -16,11 +17,12 @@ function main()
       game.init()
       game.mainLoop()
    end
+   game.close()
 end
 
 function handler(message)
    s = message .. '\n' .. debug.traceback()
-   f = io.open('log.txt', 'w')
+   f = io.open('dwarftown.log.txt', 'w')
    f:write(s)
    print(s)
    return true

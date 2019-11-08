@@ -1,3 +1,3 @@
 @echo off
-start wrapper\windows\wlua.exe src\rl.lua
+start wrapper\windows\wlua.exe src\main.lua
 pause
