@@ -5,7 +5,6 @@ require 'map'
 require 'mob'
 require 'item'
 require 'mapgen.world'
-require 'text'
 
 local keybindings = {
    [{ui.T.TK_KP_7}] = {'walk', {-1, -1}},
@@ -49,9 +48,9 @@ function init()
    item.init()
    map.init()
 
-   ui.drawScreen(text.getLoadingScreen())
+   ui.drawScreen(ui.getLoadingScreen())
    local x, y = mapgen.world.createWorld()
-   ui.drawScreen(text.getTitleScreen())
+   ui.drawScreen(ui.getTitleScreen())
    repeat until ui.T.has_input()
 
    player = mob.Player:make()
@@ -260,7 +259,7 @@ function command.mapScreenshot()
 end
 
 function saveCharacterDump(reason)
-   local f = io.open('character.txt', 'w')
+   local f = io.open(ui.dumpfilename, 'w')
    if not f then
       return
    end
@@ -268,7 +267,7 @@ function saveCharacterDump(reason)
       f:write(string.format(...))
    end
    write('%s character dump\n\n%s\n\n%s\n\n',
-         text.title, os.date(), reason)
+         ui.gametitle, os.date(), reason)
    write('--- Screenshot ---\n\n')
    write(ui.stringScreenshot())
    write('\n\n--- Last messages ---\n\n')

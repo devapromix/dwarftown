@@ -5,7 +5,6 @@ require 'map'
 require 'mob'
 require 'item'
 require 'util'
-require 'text'
 
 local C = tcod.color
 
@@ -26,6 +25,9 @@ MESSAGES_H = 10
 coloredMem = false
 
 messages = {}
+
+gametitle = 'Dwarftown v1.2'
+dumpfilename = 'dwarftown.character.txt'
 
 local ord = string.byte
 local chr = string.char
@@ -444,10 +446,49 @@ function describeTile(tile)
    end
 end
 
+helpText = [[
+--- Dwarftown ---
+
+Dwarftown was once a rich, prosperous dwarven fortress. Unfortunately, a long
+time ago it has fallen, conquered by goblins and other vile creatures.
+
+Your task is to find Dwarftown and recover two legendary dwarven Artifacts
+lost there. Good luck!
+
+--- Keybindings ---
+
+Move:  numpad,             Inventory:     i
+       arrow keys,         Pick up:       g
+                           Drop:          d
+Wait:  5                   Quit:          Esc
+Look:  x                   Help:          h
+                           Last messages: m
+
+--- Character dump ---
+
+The game saves a character dump to ]]..dumpfilename..' file.'
+
+function getTitleScreen()
+   return {
+      gametitle,
+      '',
+      'by hmp <humpolec@gmail.com>',
+      '',
+      '',
+      'Press any key to continue',
+   }
+end
+
+function getLoadingScreen()
+   local sc = getTitleScreen()
+   sc[6] = 'Creating the world, please wait...'
+   return sc
+end
+
 function help()
    T.clear()
    setColor(C.lighterGrey)
-   T.print(1, 1, text.helpText)
+   T.print(1, 1, helpText)
    T.refresh()
    repeat until T.has_input()
 end
