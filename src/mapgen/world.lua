@@ -27,6 +27,7 @@ function createWorld()
       k = KoboldCaves,
       r = RatCaves,
       f = Forest,
+	  v = Village,
    }
 
    local chart = {
@@ -35,6 +36,7 @@ function createWorld()
       {false, 'k', false},
       {false, 'r', false},
       {false, 'f', false},
+      {false, 'v', false},
    }
    local W, H = 70, 40
    for j, row in ipairs(chart) do
@@ -55,7 +57,7 @@ function createWorld()
 
    world:placeOnMap(0, 0)
    map.sectors = world.sectors
-   return sectors['f']:getStartingPoint()
+   return sectors['v']:getStartingPoint()
 end
 
 Sector = class.Object:subclass {
@@ -87,15 +89,84 @@ function Sector:getStartingPoint()
    return x + self.x, y + self.y
 end
 
+Village = Sector:subclass {
+   name = 'Village',
+   color = C.yellow,
+   
+   roadH = 25,
+   
+   nMonsters = 15,
+   monsters = {mob.Squirrel},
+}
+
+function Village:init()
+   self.room = mapgen.Room:make {
+      w = self.w, h = self.h,
+      floor = map.Grass,
+      wall = map.TallTree,
+   }
+   self.room = mapgen.cell.makeCellRoom(self.room, true, 9)--7
+
+   self.room:floodConnect()
+
+   local xc = math.floor(self.w/2)
+   for y = self.h - 3, self.h + self.roadH - 1 do
+      local d = dice.getInt(-1, 1)
+      for x = xc - 3 + d, xc + 3 + d do
+         tile = self.room.floor:make()
+         self.room:set(x, y, tile)
+      end
+   end
+
+   --self.room:addWalls()
+   self.room:floodConnect()
+   self.room:addWalls()
+   self.room:addNearWalls(map.Tree)
+   self.room:setLight(1)
+
+   for x = 1, self.w - 1 do
+      local tile = self.room:get(x, self.h + 7)
+      if not tile.empty then
+         tile.exit = true
+      end
+   end
+   
+   self.room:addRooms(
+      1, 1, self.w, self.h,
+      function()
+         local w1 = dice.getInt(5, 7)
+         local h1 = dice.getInt(5, 7)
+         return makeHouse(w1, h1)
+      end,
+      false)
+   self.room:floodConnect('mixed')
+   placeCaveIns(self.room, 15)
+end
+
+function makeHouse(w, h)
+   local room = mapgen.Room:make {
+      wall = map.Wall,
+      floor = map.Floor,
+   }
+   room:setRect(1, 1, w, h, room.floor)
+   room:addWalls()
+   return room
+end
+
+function Village:getStartingPoint()
+   local x, y = self.room:findEmptyTile(1, self.h + 2, self.w, 4)
+   return x + self.x, y + self.y
+end
+
 -- Forest is actually bigger: there are roadH road tiles on the bottom
 Forest = Sector:subclass {
    name = 'Forest',
    color = C.green,
 
-   roadH = 25,
+   roadH = 3,
 
-   nMonsters = 20,
-   monsters = {mob.Bear, mob.Squirrel, mob.Snake},
+   nMonsters = 15,
+   monsters = {mob.Bear, mob.Squirrel, mob.Frog, mob.Snake},
 }
 
 function Forest:init()
@@ -130,12 +201,12 @@ function Forest:init()
    self.room:addNearWalls(map.Tree)
    self.room:setLight(1)
 
-   for x = 1, self.w - 1 do
+   --[[for x = 1, self.w - 1 do
       local tile = self.room:get(x, self.h + 7)
       if not tile.empty then
          tile.exit = true
       end
-   end
+   end]]
 end
 
 function Forest:getStartingPoint()

@@ -937,8 +937,20 @@ Squirrel = Monster:subclass {
    hostile = false,
 }
 
+Frog = Monster:subclass {
+   glyph = {'f', C.lightGreen},
+   name = 'frog',
+
+   attackDice = {1,2,0},
+
+   speed = -2,
+   maxHp = 2,
+   level = 0,
+   hostile = false,
+}
+
 Snake = Monster:subclass {
-   glyph = {'s', C.darkGrey},
+   glyph = {'s', C.blue},
    name = 'snake',
 
    attackDice = {1,3,0},

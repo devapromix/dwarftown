@@ -43,7 +43,8 @@ function repeatCellStep(n, room, ...)
    return room
 end
 
-function makeCellRoom(room, smooth)
+function makeCellRoom(room, smooth, size)
+   local s = 5
    for x = 1, room.w-1 do
       for y = 1, room.h-1 do
          if dice.roll{1, 100, 0} > 40 then
@@ -51,12 +52,15 @@ function makeCellRoom(room, smooth)
          end
       end
    end
+   if size then
+      s = size
+   end
    if smooth then
-      room = repeatCellStep(1, room, 5, 5)
-      room = repeatCellStep(3, room, 5, 0)
+      room = repeatCellStep(1, room, s, s)
+      room = repeatCellStep(3, room, s, 0)
    else
-      room = repeatCellStep(4, room, 5, 5)
-      room = repeatCellStep(1, room, 5, 1)
+      room = repeatCellStep(4, room, s, s)
+      room = repeatCellStep(1, room, s, 1)
    end
    room:addWalls()
    room:floodConnect()
