@@ -1,20 +1,16 @@
 module('dice', package.seeall)
 
-require 'tcod'
-
-local gen = tcod.Random()
+function getFloat(lower, greater)
+    return lower + math.random()  * (greater - lower);
+end
 
 function getInt(a, b)
-   return gen:getInt(a, b)
+   return math.random(a, b)
 end
 
 -- +1 or -1
 function getSign()
-   return gen:getInt(0, 1)*2 - 1
-end
-
-function getFloat(a, b)
-   return gen:getFloat(a, b)
+   return getInt(0, 1)*2 - 1
 end
 
 -- roll AdB+C
@@ -22,7 +18,7 @@ function roll(d)
    local a, b, c = unpack(d)
    local n = c
    for i = 1, a do
-      n = n + gen:getInt(1, b)
+      n = n + getInt(1, b)
    end
    return n
 end
@@ -40,7 +36,7 @@ function describe(d)
 end
 
 function choice(tbl)
-   return tbl[gen:getInt(1, #tbl)]
+   return tbl[getInt(1, #tbl)]
 end
 
 -- TODO frequencies
@@ -64,7 +60,7 @@ function choiceEx(tbl, level)
          sum = sum + freq
       end
    end
-   sum = gen:getFloat(0, sum-0.01)
+   sum = getFloat(0, sum-0.01)
    for _, v in ipairs(tbl) do
       local it, freq = process(v)
       if it then
@@ -78,10 +74,9 @@ function choiceEx(tbl, level)
    assert(false)
 end
 
--- Fisher-Yates shuffle
 function shuffle(tbl)
    for i = #tbl, 2, -1 do
-      local j = gen:getInt(1, i)
+      local j = getInt(1, i)
       tbl[j], tbl[i] = tbl[i], tbl[j]
    end
 end

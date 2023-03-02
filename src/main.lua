@@ -7,6 +7,7 @@ require 'mapgen.tree'
 local args = {...}
 
 function main()
+	math.randomseed(os.time())
    game.open()
    if args[1] == 'mapgen' then
       mapgen.tree.test()
